@@ -14,6 +14,7 @@
 | LLM Provider | Gemini 1.5 Flash (primary), Groq (fallback/cepat) | Murah, context window besar, cepat untuk task ringan |
 | Scheduled Jobs | Supabase `pg_cron` + Edge Functions | Nightly & weekly job tanpa server terpisah |
 | Voice-to-Text (Fase 3) | Gemini Audio API atau Whisper API | Brain-dump via suara |
+| Deployment & Hosting | Vercel Free-Tier (Zero Credit Card) | Backend FastAPI & Web Next.js under `alurproject.web.id` (lihat `_docs/DEPLOYMENT_GUIDE.md`) |
 
 ---
 
