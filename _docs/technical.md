@@ -5,6 +5,7 @@
 | Layer | Teknologi | Alasan |
 |---|---|---|
 | Mobile App | Flutter (Dart) | Satu kodebase Android/iOS, animasi accordion smooth, native feel |
+| Web App | Next.js (TypeScript, Tailwind CSS) | Webapp modern, responsive weekly view untuk browser/desktop, konsisten via REST API |
 | Backend API | FastAPI (Python) | Async, cepat, native untuk integrasi LangChain/LangGraph |
 | Database | Supabase (PostgreSQL) | Auth + DB + RLS + `pg_cron` dalam satu platform |
 | Auth | Supabase Auth (Google OAuth) | Zero password management |
@@ -14,14 +15,12 @@
 | Scheduled Jobs | Supabase `pg_cron` + Edge Functions | Nightly & weekly job tanpa server terpisah |
 | Voice-to-Text (Fase 3) | Gemini Audio API atau Whisper API | Brain-dump via suara |
 
-Tidak ada web app, tidak ada hosting frontend terpisah, di scope MVP — sesuai keputusan produk (lihat `PRD.md`).
-
 ---
 
 ## 2. Arsitektur Sistem
 
 ```
-Flutter App
+Flutter App / Next.js Web App
    │  REST (HTTPS)
    ▼
 FastAPI Backend
@@ -60,6 +59,14 @@ alur/
 │   │   ├── models/
 │   │   └── services/           # API client
 │   └── pubspec.yaml
+│
+├── web/                     # Next.js app
+│   ├── src/
+│   │   ├── app/             # App router
+│   │   ├── components/      # UI components (accordion, task, dll.)
+│   │   └── lib/             # API client & Supabase auth
+│   ├── package.json
+│   └── tsconfig.json
 │
 ├── backend/                 # FastAPI
 │   ├── app/
@@ -167,3 +174,71 @@ Tidak ada secret AI di sisi Flutter — semua panggilan LLM lewat backend, mobil
 - Logging terstruktur (JSON) di setiap agent node — minimal: `user_id`, `node_name`, `input_summary`, `output_summary`, `latency_ms`
 - Log ini dipakai buat debug kualitas Extractor Agent (kasus salah parsing) — bukan buat analytics user, sesuai non-goal "tidak ada web dashboard"
 - Error dari LLM call (timeout/rate limit) → fallback: task masuk sebagai `is_ambiguous=true` dengan title mentah dari brain-dump, bukan gagal total
+
+---
+
+## 10. Standar Clean Code & Arsitektur Folder (Wajib Diikuti)
+
+Setiap kontributor dan AI agent **WAJIB** mematuhi aturan penulisan dan pengorganisasian kode berikut demi menjaga modularitas, *maintainability*, dan kemudahan pengujian:
+
+### A. Prinsip Desain Kode
+1. **Single Responsibility Principle (SRP)**:
+   - Setiap berkas, fungsi, dan komponen hanya boleh memiliki satu tanggung jawab utama.
+   - Endpoint/Route controller **TIDAK BOLEH** menulis query SQL/ORM langsung; delegasikan ke lapisan Service/Repository.
+2. **Explicit Typings**:
+   - Python: Gunakan type hints penuh (`typing`, Pydantic models) pada parameter dan *return value*.
+   - Flutter: Hindari tipe `dynamic`. Selalu gunakan model data strongly-typed dengan serialization yang aman.
+3. **No Monolithic Files**:
+   - Batasi panjang file (target < 250 baris). Jika sebuah file membesar, pecah komponen UI atau sub-layanan ke dalam berkas modular.
+4. **Environment Centralization**:
+   - Seluruh kredensial & konfigurasi dibaca terpusat dari `.env` root repository (lihat `_docs/ENV_GUIDE.md`).
+
+### B. Struktur Direktori Backend (`backend/`)
+```
+backend/
+├── app/
+│   ├── api/             # HTTP Route handlers / Controllers (FastAPI APIRouter)
+│   │   ├── deps.py      # Dependency injections (Auth, Supabase client, User context)
+│   │   ├── tasks.py     # Endpoints /tasks
+│   │   ├── brain_dump.py# Endpoints /brain-dump
+│   │   └── insights.py  # Endpoints /insights
+│   ├── core/            # Konfigurasi sistem & inisialisasi singleton
+│   │   ├── config.py    # Pydantic Settings membaca root .env
+│   │   └── supabase.py  # Supabase client singleton & auth helpers
+│   ├── models/          # Entity / Database models (jika menggunakan ORM)
+│   ├── schemas/         # Pydantic schemas (Request & Response validation)
+│   │   └── task.py
+│   ├── services/        # Business logic & Database access layer
+│   │   └── task_service.py
+│   ├── agents/          # LangChain & LangGraph agents
+│   └── main.py          # FastAPI application factory, CORS, & middleware
+├── tests/               # Automated unit & integration tests (pytest)
+│   ├── conftest.py
+│   └── test_tasks.py
+└── requirements.txt
+```
+
+### C. Struktur Direktori Mobile (`mobile/`)
+```
+mobile/
+├── lib/
+│   ├── core/            # Theme, color tokens, typography, constants, error handling
+│   │   ├── constants/
+│   │   └── theme/
+│   ├── models/          # Data transfer objects & JSON parsers
+│   │   └── task.dart
+│   ├── services/        # HTTP API client, local storage, Supabase auth
+│   │   └── api_service.dart
+│   ├── screens/         # Page/Screen level widgets
+│   │   └── weekly_view/
+│   │       └── weekly_screen.dart
+│   ├── widgets/         # Modular reusable UI components
+│   │   ├── day_block.dart
+│   │   ├── day_strip.dart
+│   │   ├── task_row.dart
+│   │   └── follow_up_chip.dart
+│   └── main.dart        # Entry point Flutter
+├── test/                # Unit, widget, and integration tests
+└── pubspec.yaml
+```
+
