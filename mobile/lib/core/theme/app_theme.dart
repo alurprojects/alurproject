@@ -1,25 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 abstract final class AppTheme {
   static ThemeData get lightTheme {
+    final baseTextTheme = GoogleFonts.nunitoTextTheme();
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.lightBackground,
       colorScheme: const ColorScheme.light(
         surface: AppColors.lightBackground,
-        primary: AppColors.lightTextPrimary,
+        primary: AppColors.pureBlack,
         onPrimary: Colors.white,
-        onSurface: AppColors.lightTextPrimary,
+        onSurface: AppColors.pureBlack,
       ),
-      dividerColor: Colors.transparent, // No horizontal line dividers
-      appBarTheme: const AppBarTheme(
+      textTheme: baseTextTheme.apply(
+        bodyColor: AppColors.lightTextPrimary,
+        displayColor: AppColors.lightTextPrimary,
+      ),
+      dividerColor: Colors.transparent,
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.lightBackground,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: IconThemeData(color: AppColors.lightTextPrimary),
-        titleTextStyle: TextStyle(
+        iconTheme: const IconThemeData(color: AppColors.lightTextPrimary),
+        titleTextStyle: GoogleFonts.nunito(
           color: AppColors.lightTextPrimary,
           fontSize: 18,
           fontWeight: FontWeight.w800,
@@ -29,23 +35,28 @@ abstract final class AppTheme {
   }
 
   static ThemeData get darkTheme {
+    final baseTextTheme = GoogleFonts.nunitoTextTheme(ThemeData.dark().textTheme);
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.darkBackground,
       colorScheme: const ColorScheme.dark(
         surface: AppColors.darkBackground,
-        primary: AppColors.darkTextPrimary,
+        primary: AppColors.pureWhite,
         onPrimary: Colors.black,
-        onSurface: AppColors.darkTextPrimary,
+        onSurface: AppColors.pureWhite,
       ),
-      dividerColor: Colors.transparent, // No horizontal line dividers
-      appBarTheme: const AppBarTheme(
+      textTheme: baseTextTheme.apply(
+        bodyColor: AppColors.darkTextPrimary,
+        displayColor: AppColors.darkTextPrimary,
+      ),
+      dividerColor: Colors.transparent,
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.darkBackground,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: IconThemeData(color: AppColors.darkTextPrimary),
-        titleTextStyle: TextStyle(
+        iconTheme: const IconThemeData(color: AppColors.darkTextPrimary),
+        titleTextStyle: GoogleFonts.nunito(
           color: AppColors.darkTextPrimary,
           fontSize: 18,
           fontWeight: FontWeight.w800,

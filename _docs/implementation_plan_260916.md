@@ -13,14 +13,14 @@ Berdasarkan pembaruan `PRD.md`, `DESIGN.md`, `DATABASE.md`, dan `technical.md`, 
 Menyesuaikan tema Flutter agar mengadopsi standar visual *high-contrast black-and-white* yang membulat (rounded) dan *playful*.
 
 #### [MODIFY] `mobile/pubspec.yaml`
-- [ ] Tambahkan package `google_fonts` untuk menggunakan font **Nunito** atau **Fredoka** sebagai font utama aplikasi.
+- [x] Tambahkan package `google_fonts` untuk menggunakan font **Nunito** atau **Fredoka** sebagai font utama aplikasi.
 
 #### [MODIFY] `mobile/lib/core/theme/app_theme.dart` (atau `app_colors.dart`)
-- [ ] Hapus warna *Warm Off-White/Ink Black*, ubah palet menjadi `Pure Black (#000000)` dan `Pure White (#FFFFFF)`.
+- [x] Hapus warna *Warm Off-White/Ink Black*, ubah palet menjadi `Pure Black (#000000)` dan `Pure White (#FFFFFF)`.
 
 #### [MODIFY] `mobile/lib/widgets/` (Global Components)
-- [ ] Buat/perbarui komponen *Button* menjadi kapsul bulat penuh (*fully rounded pill*).
-- [ ] Sesuaikan komponen penanda (*checkbox/day selector*) mengikuti gaya *solid black fill* ketika aktif.
+- [x] Buat/perbarui komponen *Button* menjadi kapsul bulat penuh (*fully rounded pill*).
+- [x] Sesuaikan komponen penanda (*checkbox/day selector*) mengikuti gaya *solid black fill* ketika aktif.
 
 ---
 

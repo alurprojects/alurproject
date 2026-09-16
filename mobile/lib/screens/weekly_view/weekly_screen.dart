@@ -5,6 +5,7 @@ import '../../models/task.dart';
 import '../../services/api_service.dart';
 import '../../widgets/day_block.dart';
 import '../../widgets/day_strip.dart';
+import '../../widgets/pill_button.dart';
 
 class WeeklyScreen extends StatefulWidget {
   final ApiService apiService;
@@ -287,62 +288,36 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
+                  PillButton(
                     width: double.infinity,
                     height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark ? AppColors.darkActiveAccent : AppColors.inkBlack,
-                        foregroundColor: isDark ? Colors.black : Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        elevation: 0,
-                      ),
-                      onPressed: isSubmitting
-                          ? null
-                          : () async {
-                              final text = textController.text.trim();
-                              if (text.isEmpty) return;
+                    label: 'Process Brain-dump',
+                    isLoading: isSubmitting,
+                    onPressed: () async {
+                      final text = textController.text.trim();
+                      if (text.isEmpty) return;
 
-                              setModalState(() {
-                                isSubmitting = true;
-                              });
+                      setModalState(() {
+                        isSubmitting = true;
+                      });
 
-                              try {
-                                await widget.apiService.brainDump(text: text);
-                                if (context.mounted) {
-                                  Navigator.of(context).pop();
-                                }
-                                _loadWeek();
-                              } catch (e) {
-                                setModalState(() {
-                                  isSubmitting = false;
-                                });
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Brain-dump error: $e')),
-                                  );
-                                }
-                              }
-                            },
-                      child: isSubmitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Process Brain-dump',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                    ),
+                      try {
+                        await widget.apiService.brainDump(text: text);
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                        }
+                        _loadWeek();
+                      } catch (e) {
+                        setModalState(() {
+                          isSubmitting = false;
+                        });
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Brain-dump error: $e')),
+                          );
+                        }
+                      }
+                    },
                   ),
                 ],
               ),

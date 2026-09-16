@@ -53,29 +53,33 @@ class _TaskRowState extends State<TaskRow> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Square Checkbox with rounded corners (matches reference mockup)
+              // Circular Checkbox (fills solid pure black on completion, white check icon)
               GestureDetector(
                 onTap: () => widget.onToggle(!isDone),
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 12.0),
                   child: Container(
-                    width: 18,
-                    height: 18,
+                    width: 20,
+                    height: 20,
                     decoration: BoxDecoration(
-                      color: isDone ? AppColors.orangeAccent : Colors.transparent,
-                      borderRadius: BorderRadius.circular(4),
+                      shape: BoxShape.circle,
+                      color: isDone
+                          ? (isDark ? AppColors.pureWhite : AppColors.pureBlack)
+                          : Colors.transparent,
                       border: Border.all(
-                        color: isDone ? AppColors.orangeAccent : checkboxBorderColor,
+                        color: isDone
+                            ? (isDark ? AppColors.pureWhite : AppColors.pureBlack)
+                            : checkboxBorderColor,
                         width: 1.5,
                       ),
                     ),
                     child: isDone
-                        ? const Center(
+                        ? Center(
                             child: Icon(
                               Icons.check,
                               size: 13,
-                              color: Colors.white,
+                              color: isDark ? AppColors.pureBlack : AppColors.pureWhite,
                               weight: 900,
                             ),
                           )
@@ -89,12 +93,12 @@ class _TaskRowState extends State<TaskRow> {
                 child: Text(
                   widget.task.title,
                   style: TextStyle(
-                    color: isDone ? AppColors.orangeAccent : primaryTextColor,
+                    color: isDone ? metaColor : primaryTextColor,
                     fontSize: 15.5,
-                    fontWeight: isDone ? FontWeight.w400 : FontWeight.w400,
+                    fontWeight: isDone ? FontWeight.w400 : FontWeight.w500,
                     letterSpacing: -0.1,
                     decoration: isDone ? TextDecoration.lineThrough : null,
-                    decorationColor: AppColors.orangeAccent,
+                    decorationColor: metaColor,
                     decorationThickness: 1.5,
                   ),
                 ),
@@ -238,7 +242,7 @@ class _TaskRowState extends State<TaskRow> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.orangeAccent,
+                          color: primaryTextColor,
                         ),
                       ),
                     ),
