@@ -3,53 +3,50 @@
 
 ## 1. Visual Theme & Atmosphere
 
-ALUR embodies a **calm, monochrome workspace** — the visual opposite of a cluttered productivity app. The interface feels like a **plain notebook page that got tidied up**: bold, confident typography sits on generous cream/off-white space, with a single solid black used sparingly as the anchor color for anything that matters right now (today's date, active task states, primary actions).
+ALUR embodies a **bold, high-contrast, friendly monochrome workspace**. The interface feels modern, playful yet clean: heavily rounded, confident typography sits on stark pure white space, with pure solid black used as the dominant anchor color for active states, primary actions, and prominent cards.
 
-The mood is **quiet but assertive** — no gradients, no colorful badges, no motivational illustrations screaming for attention. Where warmth is needed (onboarding, empty states), a single hand-drawn line illustration is allowed — otherwise the interface stays flat, graphic, and editorial. This restraint is intentional: ALUR's backend does the thinking; the UI should never compete for it.
+The mood is **friendly and highly legible** — no gradients, no colorful badges. The design relies entirely on stark black-and-white contrast, generous border radii (pill shapes, blobs), and a distinct rounded typeface to provide personality. ALUR's backend does the complex thinking; the UI provides a welcoming, effortless, and slightly playful surface.
 
 **Key Characteristics:**
-- Near-black solid blocks used as the only strong visual signal (today's day header, primary CTA, active nav state)
-- Flat design — no shadows, no gradients, borders instead of elevation
-- Bold, oversized headline type for day names and section titles
-- Generous whitespace between the weekly accordion blocks
-- One accent illustration style (thin line art) reserved for onboarding/empty states only
-- Icons are outline-style, single-weight, never filled except when active
+- Pure black solid blocks and pure white backgrounds for maximum contrast
+- Flat design — no shadows, no gradients; uses thin black outlines or solid black fills to define shapes
+- Friendly, rounded, oversized headline typography
+- Organic "blob" shapes or fully rounded pills for containers and illustrations
+- Icons are thin outline-style, enclosed in circular borders or floating cleanly
 
 ## 2. Color Palette & Roles
 
 ### Primary Foundation
-- **Warm Off-White** (#FAF9F7) — Primary background. Slightly warmer than pure white, used across the entire app shell.
-- **Paper Gray** (#F0EFED) — Secondary surface for collapsed day-strips and inactive card backgrounds.
+- **Pure White** (#FFFFFF) — Primary background for the entire app shell and empty surfaces.
+- **Light Gray** (#F5F5F5) — Used very sparingly for inactive states or subtle dividers, though white/black contrast is preferred.
 
 ### Anchor & Interactive
-- **Ink Black** (#111111) — The sole strong accent. Used for: active day header background, primary buttons (brain-dump FAB, "Let's go" style CTAs), active bottom-nav icon, checked task strike color reference.
-- **Ink Black is never used decoratively** — every black surface on screen is either an active state or a primary action.
+- **Pure Black** (#000000) — The dominant accent and text color. Used for: headings, primary buttons (pill-shaped), active icons, selected checkboxes, and prominent data cards (like progress banners).
 
 ### Typography & Text Hierarchy
-- **Charcoal** (#1A1A1A) — Primary text: day names, task titles, headlines.
-- **Warm Gray** (#7A7772) — Secondary text: timestamps, metadata, placeholder text, collapsed day labels.
-- **Hairline Gray** (#DEDBD6) — Borders, dividers between tasks, input outlines.
+- **Pure Black** (#000000) — Primary text: day names, task titles, headlines.
+- **Medium Gray** (#9CA3AF) — Secondary text: timestamps, metadata, placeholder text, unselected days.
+- **Thin Black / Dark Gray** — Borders for unselected items, categories, and inputs.
 
 ### Functional States (system feedback only)
-- **Done Accent** — Completed task shown via strikethrough + Ink Black filled checkbox, no separate green needed for v1
-- **Miss/Alert Terracotta** (#C1502E) — Missed-task follow-up chip accent, low-capacity warning (dev-only reference, never a loud banner)
-- **Info Slate** (#6B7280) — Neutral system text (e.g. "AI sarankan pindah ke Rabu")
+- **Done Accent** — Solid Pure Black filled circle with a white checkmark.
+- **Miss/Alert Terracotta** (#C1502E) — Kept only for dev-reference if absolutely necessary, but visually, errors/misses rely on outline vs solid black patterns.
+- **Info Slate** (#6B7280) — Neutral system text.
 
 ## 3. Typography Rules
 
-**Primary Font Family:** Inter (or General Sans as a close alternative) — geometric grotesk, matches the bold/condensed headline style in the reference screens.
+**Primary Font Family:** A rounded, friendly, bold sans-serif (e.g., **Fredoka**, **Nunito**, **Quicksand**, or similar). This is crucial for the app's playful yet clean identity.
 
 ### Hierarchy & Weights
-- **Day Headers (H1):** Extra-bold (800), tight letter-spacing (-0.02em), 2rem-2.5rem. E.g. "MONDAY" — always uppercase, always the loudest element on screen.
-- **Section Labels (H2):** Bold (700), normal spacing, 1.25rem. E.g. "Upcoming", "All".
-- **Task Title (Body-strong):** Medium (500), 1rem. No weight change when done — only strikethrough + gray-out.
-- **Meta/Timestamp:** Regular (400), 0.8125rem, Warm Gray. Date, time, "(?)" marker.
-- **Button/CTA Label:** Semi-bold (600), 0.9375rem, normal spacing.
+- **Large Headers (H1):** Extra-bold or Black (800/900), very large (e.g., 2.5rem - 3rem), tight letter-spacing. Used for page titles or active day headers. Sentence case is preferred for a friendlier tone (e.g., "Break your bad habits", "My challenges").
+- **Section Labels (H2):** Bold (700), 1.25rem - 1.5rem.
+- **Body / Task Title (Body-strong):** Medium or Semi-bold (500/600), 1rem - 1.125rem. Rounded font makes it highly readable.
+- **Meta/Timestamp:** Regular (400), 0.75rem - 0.875rem, Medium Gray.
+- **Button/CTA Label:** Bold (700), 1rem, inside fully rounded pill buttons.
 
 ### Spacing Principles
-- Day header block: 1.5rem vertical padding top, 1rem bottom before task list starts
-- Task rows: 0.875rem vertical padding each, separated by 1px Hairline Gray divider (no card wrapper — flat list, not boxed cards)
-- 2rem gap between the active day block and the first collapsed day-strip below it
+- **Generous Padding:** Components breathe. Large padding inside buttons and cards.
+- **Task rows:** separated by ample whitespace, often utilizing circular day-selectors instead of standard square checkboxes.
 
 ## 4. Component Stylings
 
@@ -77,25 +74,26 @@ The mood is **quiet but assertive** — no gradients, no colorful badges, no mot
 - **Dismissable:** Swipe or explicit choice always removes the chip — never persists after a decision
 
 ### Buttons
-- **Primary (Brain-dump FAB, "Add task" confirm):** Solid Ink Black background, white text/icon, fully rounded (pill shape, matching the reference's "Let's go!" button), comfortable padding (0.875rem vertical, 1.5rem horizontal)
-- **Secondary (Reschedule "Terima"/"Abaikan"):** Outline Ink Black border, transparent background, 8px corners, fills black on press
-- **Hover/Press State:** Simple opacity dip (0.85) on press, 150ms — no shadow lift, keeps the flat aesthetic
+- **Primary:** Solid Pure Black background, white text/icon, **fully rounded (pill shape)**, very generous padding (e.g., 1rem vertical, 2rem horizontal). Often spans full width or aligns right.
+- **Secondary:** Thin black outline, transparent background, fully rounded pill shape.
+- **Hover/Press State:** Opacity dip, no shadow.
 
 ### Bottom Navigation
 
-3 ikon tetap (tidak ada tab ke-4 atau ke-5) dalam floating pill container (Warm Off-White background, Hairline Gray border):
+Standar flat bottom bar dengan background Pure White (bukan floating pill), dipisahkan dari konten dengan divider garis sangat tipis atau whitespace. 3 ikon tetap (CONST-02):
 
 | Posisi | Ikon | Tab |
 |---|---|---|
-| Kiri | `checklist` outline | To-do list (accordion mingguan) |
-| Tengah | `calendar` outline | Calendar (time-block view) |
+| Kiri | `checklist` / home outline | To-do list (accordion mingguan) |
+| Tengah | `calendar` / chart outline | Calendar (time-block view) |
 | Kanan | `person`/`user` outline | Profile (settings + Goals) |
 
-Active item ditampilkan sebagai solid Ink Black circle dengan white icon — berlaku untuk ketiga ikon. Icon size 22px, single stroke weight, tanpa text label (icon-only, konsisten dengan minimal-surface philosophy).
+Active item ditandai dengan ikon solid/bolder ATAU label teks kecil di bawah ikon (misal "My challenges"). Inactive items menggunakan icon outline tipis berwarna abu-abu/hitam tanpa teks.
 
-### Onboarding Illustration
-- **Style:** Thin single-weight line art, monochrome (Charcoal strokes on Warm Off-White), small playful accents (stars, dots) allowed — this is the ONE place personality is allowed to show
-- **Usage:** Only on first-launch onboarding and empty-state screens (e.g. "no tasks yet"). Never inside the daily accordion.
+### Illustrations & Imagery
+- **Style:** Thin single-weight line art, monochrome (black strokes on white).
+- **Background Shape:** Illustrations sit inside **organic, asymmetrical "blob" shapes** with a thin black outline, adding to the playful, rounded aesthetic. Some areas of the illustration (like hair or clothes) may use solid black fill for contrast.
+- **Usage:** Onboarding, empty states, or hero banners.
 
 ### Inputs (Add Task / Brain-dump)
 - **Style:** Flat field, 1px Hairline Gray border, 8px corners, Warm Off-White background
@@ -150,20 +148,20 @@ Goals ditampilkan sebagai section dalam tab Profile, bukan tab terpisah (CONST-0
 ## 6. Design System Notes for Stitch/Codegen Generation
 
 ### Language to Use
-- **Atmosphere:** "Calm monochrome workspace, flat and editorial, no shadows"
-- **Accent usage:** "Ink Black used only for active states and primary actions — never decorative"
-- **Illustration:** "Thin single-weight line art, monochrome, reserved for onboarding only"
-- **Spacing:** "Generous but restrained — quiet whitespace, not gallery-scale"
+- **Atmosphere:** "High contrast black and white, heavily rounded, friendly and playful, no shadows"
+- **Accent usage:** "Pure Black used for active states, prominent headings, and pill buttons"
+- **Illustration:** "Thin line art inside an organic blob outline, solid black accents"
+- **Typography:** "Must use a rounded, friendly sans-serif font (like Fredoka or Nunito)"
 
 ### Color References
-- Primary anchor: "Ink Black (#111111)"
-- Background: "Warm Off-White (#FAF9F7)" / "Paper Gray (#F0EFED)"
-- Text: "Charcoal (#1A1A1A)" / "Warm Gray (#7A7772)"
+- Primary anchor: "Pure Black (#000000)"
+- Background: "Pure White (#FFFFFF)"
+- Inactive/Secondary: "Medium Gray (#9CA3AF)"
 
 ### Component Prompts
-- "Create a day-strip block with 16px rounded corners, Paper Gray background, bold uppercase day name, full-width tap target"
-- "Design a task row with an outline circle checkbox that fills Ink Black with a white check on completion, title strikethrough + gray on done"
-- "Add a floating pill bottom nav with 3 outline icons (checklist, calendar, user), active icon shown as solid Ink Black circle with white icon"
+- "Create a pill-shaped primary button, pure black with white text"
+- "Design a task row with circular day indicators; active day is a solid black circle with white text, inactive is an outline circle"
+- "Add a flat white bottom nav with 3 outline icons (checklist, calendar, user), active icon has a bold state or small label"
 
 ### Incremental Iteration
 1. Work on ONE component per pass (e.g., "refine the follow-up chip banner")
