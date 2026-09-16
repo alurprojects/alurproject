@@ -48,16 +48,20 @@ FastAPI dideploy sebagai serverless function Python di Vercel menggunakan konfig
    ```json
    {
      "version": 2,
-     "builds": [
+     "rewrites": [
        {
-         "src": "backend/app/main.py",
-         "use": "@vercel/python"
-       }
-     ],
-     "routes": [
+         "has": [
+           {
+             "type": "host",
+             "value": "api.alurproject.web.id"
+           }
+         ],
+         "source": "/(.*)",
+         "destination": "/api/index.py"
+       },
        {
-         "src": "/(.*)",
-         "dest": "backend/app/main.py"
+         "source": "/api/(.*)",
+         "destination": "/api/index.py"
        }
      ]
    }
