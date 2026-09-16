@@ -21,10 +21,10 @@ The mood is **friendly and highly legible** — no gradients, no colorful badges
 - **Light Gray** (#F5F5F5) — Used very sparingly for inactive states or subtle dividers, though white/black contrast is preferred.
 
 ### Anchor & Interactive
-- **Pure Black** (#000000) — The dominant accent and text color. Used for: headings, primary buttons (pill-shaped), active icons, selected checkboxes, and prominent data cards (like progress banners).
+- **Pure Black** (#070600) — The dominant accent and text color. Used for: headings, primary buttons (pill-shaped), active icons, selected checkboxes, and prominent data cards (like progress banners).
 
 ### Typography & Text Hierarchy
-- **Pure Black** (#000000) — Primary text: day names, task titles, headlines.
+- **Pure Black** (#070600) — Primary text: day names, task titles, headlines.
 - **Medium Gray** (#9CA3AF) — Secondary text: timestamps, metadata, placeholder text, unselected days.
 - **Thin Black / Dark Gray** — Borders for unselected items, categories, and inputs.
 
@@ -35,18 +35,19 @@ The mood is **friendly and highly legible** — no gradients, no colorful badges
 
 ## 3. Typography Rules
 
-**Primary Font Family:** A rounded, friendly, bold sans-serif (e.g., **Fredoka**, **Nunito**, **Quicksand**, or similar). This is crucial for the app's playful yet clean identity.
+**Primary Font Family:** Inter (or General Sans as a close alternative) — geometric grotesk, matches the bold/condensed headline style in the reference screens.
 
 ### Hierarchy & Weights
-- **Large Headers (H1):** Extra-bold or Black (800/900), very large (e.g., 2.5rem - 3rem), tight letter-spacing. Used for page titles or active day headers. Sentence case is preferred for a friendlier tone (e.g., "Break your bad habits", "My challenges").
-- **Section Labels (H2):** Bold (700), 1.25rem - 1.5rem.
-- **Body / Task Title (Body-strong):** Medium or Semi-bold (500/600), 1rem - 1.125rem. Rounded font makes it highly readable.
-- **Meta/Timestamp:** Regular (400), 0.75rem - 0.875rem, Medium Gray.
-- **Button/CTA Label:** Bold (700), 1rem, inside fully rounded pill buttons.
+- **Day Headers (H1):** Extra-bold (800), tight letter-spacing (-0.02em), 2rem-2.5rem. E.g. "MONDAY" — always uppercase, always the loudest element on screen.
+- **Section Labels (H2):** Bold (700), normal spacing, 1.25rem. E.g. "Upcoming", "All".
+- **Task Title (Body-strong):** Medium (500), 1rem. No weight change when done — only strikethrough + gray-out.
+- **Meta/Timestamp:** Regular (400), 0.8125rem, Warm Gray. Date, time, "(?)" marker.
+- **Button/CTA Label:** Semi-bold (600), 0.9375rem, normal spacing.
 
 ### Spacing Principles
-- **Generous Padding:** Components breathe. Large padding inside buttons and cards.
-- **Task rows:** separated by ample whitespace, often utilizing circular day-selectors instead of standard square checkboxes.
+- Day header block: 1.5rem vertical padding top, 1rem bottom before task list starts
+- Task rows: 0.875rem vertical padding each, separated by 1px Hairline Gray divider (no card wrapper — flat list, not boxed cards)
+- 2rem gap between the active day block and the first collapsed day-strip below it
 
 ## 4. Component Stylings
 
@@ -148,10 +149,10 @@ Goals ditampilkan sebagai section dalam tab Profile, bukan tab terpisah (CONST-0
 ## 6. Design System Notes for Stitch/Codegen Generation
 
 ### Language to Use
-- **Atmosphere:** "High contrast black and white, heavily rounded, friendly and playful, no shadows"
+- **Atmosphere:** "High contrast black and white, flat and editorial, bold typography, no shadows"
 - **Accent usage:** "Pure Black used for active states, prominent headings, and pill buttons"
 - **Illustration:** "Thin line art inside an organic blob outline, solid black accents"
-- **Typography:** "Must use a rounded, friendly sans-serif font (like Fredoka or Nunito)"
+- **Typography:** "Inter (geometric grotesk), bold uppercase headlines, clean readability"
 
 ### Color References
 - Primary anchor: "Pure Black (#000000)"

@@ -4,7 +4,7 @@ import '../constants/app_colors.dart';
 
 abstract final class AppTheme {
   static ThemeData get lightTheme {
-    final baseTextTheme = GoogleFonts.nunitoTextTheme();
+    final baseTextTheme = GoogleFonts.interTextTheme();
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
@@ -25,7 +25,7 @@ abstract final class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: AppColors.lightTextPrimary),
-        titleTextStyle: GoogleFonts.nunito(
+        titleTextStyle: GoogleFonts.inter(
           color: AppColors.lightTextPrimary,
           fontSize: 18,
           fontWeight: FontWeight.w800,
@@ -35,7 +35,7 @@ abstract final class AppTheme {
   }
 
   static ThemeData get darkTheme {
-    final baseTextTheme = GoogleFonts.nunitoTextTheme(ThemeData.dark().textTheme);
+    final baseTextTheme = GoogleFonts.interTextTheme(ThemeData.dark().textTheme);
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
@@ -56,7 +56,7 @@ abstract final class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: AppColors.darkTextPrimary),
-        titleTextStyle: GoogleFonts.nunito(
+        titleTextStyle: GoogleFonts.inter(
           color: AppColors.darkTextPrimary,
           fontSize: 18,
           fontWeight: FontWeight.w800,

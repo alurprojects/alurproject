@@ -68,7 +68,7 @@ class PillButton extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: GoogleFonts.nunito(
+                    style: GoogleFonts.inter(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: fgColor,
