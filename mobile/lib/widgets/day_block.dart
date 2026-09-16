@@ -6,6 +6,7 @@ import 'task_row.dart';
 
 class DayBlock extends StatefulWidget {
   final DayData dayData;
+  final int shadeIndex;
   final Function(Task task, bool isDone) onToggleTask;
   final Function(String title) onAddTask;
   final Function(Task task, int minutes)? onClarifyTask;
@@ -16,6 +17,7 @@ class DayBlock extends StatefulWidget {
   const DayBlock({
     super.key,
     required this.dayData,
+    this.shadeIndex = 0,
     required this.onToggleTask,
     required this.onAddTask,
     this.onClarifyTask,
@@ -67,6 +69,10 @@ class _DayBlockState extends State<DayBlock> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final shades = isDark ? AppColors.darkDayShades : AppColors.lightDayShades;
+    final safeIndex = widget.shadeIndex.clamp(0, shades.length - 1);
+    final backgroundColor = shades[safeIndex];
+
     final primaryTextColor =
         isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final secondaryTextColor =
@@ -74,8 +80,9 @@ class _DayBlockState extends State<DayBlock> {
     final placeholderColor =
         isDark ? AppColors.darkTextPlaceholder : AppColors.lightTextPlaceholder;
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 28.0),
+    return Container(
+      color: backgroundColor,
+      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 20.0, bottom: 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -83,11 +90,11 @@ class _DayBlockState extends State<DayBlock> {
           Text(
             widget.dayData.dayName.toUpperCase(),
             style: TextStyle(
-              fontSize: 50,
+              fontSize: 38,
               fontWeight: FontWeight.w900,
-              letterSpacing: -1.5,
+              letterSpacing: -1.0,
               color: primaryTextColor,
-              height: 1.0,
+              height: 1.05,
             ),
           ),
           const SizedBox(height: 6),

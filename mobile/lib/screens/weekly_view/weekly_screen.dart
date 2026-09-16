@@ -517,13 +517,9 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                           final day = _weekData!.days[index];
                           final isExpanded = index == _expandedDayIndex;
 
-                          // Calculate progressive shade index for collapsed days
-                          int shadeIndex = 0;
-                          for (int i = 0; i < index; i++) {
-                            if (i != _expandedDayIndex) {
-                              shadeIndex++;
-                            }
-                          }
+                          // Direct day position shade index (0 = Monday, ..., 6 = Sunday)
+                          // Creates an impeccably smooth stepped gradient cascading down the notebook
+                          final shadeIndex = index;
 
                           return AnimatedCrossFade(
                             duration: const Duration(milliseconds: 220),
@@ -534,6 +530,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                                 : CrossFadeState.showSecond,
                             firstChild: DayBlock(
                               dayData: day,
+                              shadeIndex: shadeIndex,
                               onToggleTask: _toggleTaskStatus,
                               onAddTask: (title) => _handleAddTask(day.date, title),
                               onClarifyTask: _handleClarifyTask,
