@@ -12,10 +12,11 @@
 | Tabel | Fase | Deskripsi |
 | :--- | :---: | :--- |
 | `users` | 1 | Profil, timezone, dan kapasitas harian user |
-| `goals` | 1 | Target / tujuan jangka menengah-panjang user |
+| `goals` | 1 | Target / tujuan jangka menengah-panjang user (ditampilkan di tab Profile) |
 | `tasks` | 1 | Unit kerja utama; bisa manual atau dari brain-dump |
 | `task_suggestions` | 3 | Saran reschedule dari Scheduler Agent (histori + status respons) |
 | `ai_insights` | 3 | Insight mingguan yang ditulis oleh Reflection Agent |
+| `google_calendar_connections` | **Tahap B** | Koneksi OAuth Google Calendar per user (read-only, bukan Fase 1) |
 
 ---
 
@@ -26,10 +27,11 @@ users (1)
  ├──────────────────────────────────────────── goals (N)
  │                                               │
  └──────────────────────────────────────────── tasks (N) ─── goal_id → goals (nullable)
-                                                  │
-                                                  └──────── task_suggestions (N)
+                                                   │
+                                                   └──────── task_suggestions (N)
 
 users (1) ─────────────────────────────────── ai_insights (N)
+users (1) ─────────────────────────────────── google_calendar_connections (N, Tahap B)
 ```
 
 ---
@@ -124,6 +126,10 @@ CREATE TABLE goals (
     description  TEXT,                    -- konteks untuk AI saat scheduling
     deadline     DATE,                    -- target selesai, nullable
     status       goal_status NOT NULL DEFAULT 'ACTIVE',
+    -- Smart Breakdown Level 2: priority eksplisit user, nullable.
+    -- Dipilih kolom DB (bukan hitung dari deadline) karena user bisa punya 2 goal
+    -- dengan deadline sama tapi urgensi subjektif berbeda. 1 = tertinggi.
+    priority     SMALLINT CHECK (priority IS NULL OR priority >= 1),
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -335,6 +341,49 @@ CREATE POLICY "ai_insights: read own" ON ai_insights
 
 ---
 
+## 7.5 Tabel: `google_calendar_connections` *(Tahap B — bukan Fase 1)*
+
+> [!NOTE]
+> Tabel ini adalah tabel independen baru. Aman dibuat belakangan saat Google Calendar Tahap B siap dibangun. **Jangan buat di Fase 1** — tidak ada data existing yang perlu dimigrasikan, jadi tidak ada risiko `ALTER TABLE` pada tabel berisi data produksi.
+
+Menyimpan token OAuth Google Calendar per user untuk integrasi read-only (scope `calendar.readonly`).
+
+```sql
+CREATE TABLE google_calendar_connections (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    access_token      TEXT NOT NULL,           -- OAuth access token (enkripsi di app layer)
+    refresh_token     TEXT NOT NULL,           -- OAuth refresh token (enkripsi di app layer)
+    token_expiry      TIMESTAMPTZ NOT NULL,    -- kapan access_token kedaluwarsa
+    gcal_calendar_id  TEXT NOT NULL,           -- calendar ID Google (biasanya email user)
+    sync_enabled      BOOLEAN NOT NULL DEFAULT FALSE,  -- user bisa disable sync tanpa disconnect
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX gcal_connections_user_calendar_uidx
+    ON google_calendar_connections (user_id, gcal_calendar_id);
+
+CREATE TRIGGER gcal_connections_updated_at
+    BEFORE UPDATE ON google_calendar_connections
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+```
+
+### Row Level Security (RLS)
+
+```sql
+ALTER TABLE google_calendar_connections ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "gcal_connections: all own" ON google_calendar_connections
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+```
+
+> [!WARNING]
+> `access_token` dan `refresh_token` harus dienkripsi di application layer (bukan disimpan plain text). Backend FastAPI bertanggung jawab untuk enkripsi/dekripsi — mobile app tidak boleh menyentuh tabel ini secara langsung.
+
+---
+
 ## 8. Format `recurrence_rule`
 
 `tasks.recurrence_rule` menggunakan format **string kustom sederhana** yang mudah diparsing oleh AI (Extractor Agent) maupun kode generator cron.
@@ -452,19 +501,20 @@ SELECT cron.schedule(
 Jalankan file migrasi di Supabase SQL Editor atau via `supabase db push` dalam urutan berikut:
 
 ```
-001_create_enum_types.sql          -- Semua CREATE TYPE
-002_create_trigger_updated_at.sql  -- Fungsi reusable updated_at trigger
-003_create_users.sql               -- Tabel users + auth trigger
-004_create_goals.sql               -- Tabel goals + RLS
-005_create_tasks.sql               -- Tabel tasks + RLS + index
-006_create_task_suggestions.sql    -- Tabel task_suggestions + RLS (Fase 3, bisa skip Fase 1)
-007_create_ai_insights.sql         -- Tabel ai_insights + RLS (Fase 3, bisa skip Fase 1)
-008_setup_rls_policies.sql         -- Verifikasi semua RLS aktif
-009_setup_pg_cron.sql              -- Daftarkan cron jobs (HANYA setelah Fase 3 siap)
+001_create_enum_types.sql               -- Semua CREATE TYPE
+002_create_trigger_updated_at.sql       -- Fungsi reusable updated_at trigger
+003_create_users.sql                    -- Tabel users + auth trigger
+004_create_goals.sql                    -- Tabel goals + RLS (termasuk kolom priority)
+005_create_tasks.sql                    -- Tabel tasks + RLS + index
+006_create_task_suggestions.sql         -- Tabel task_suggestions + RLS (Fase 3, bisa skip Fase 1)
+007_create_ai_insights.sql              -- Tabel ai_insights + RLS (Fase 3, bisa skip Fase 1)
+008_create_gcal_connections.sql         -- Tabel google_calendar_connections + RLS (Tahap B, bukan Fase 1)
+009_setup_rls_policies.sql              -- Verifikasi semua RLS aktif
+010_setup_pg_cron.sql                   -- Daftarkan cron jobs (HANYA setelah Fase 3 siap)
 ```
 
 > [!WARNING]
-> **Strategi Fase 1**: yang perlu disiapkan lebih awal cuma **kolom-kolom AI di tabel `tasks`** (`is_ambiguous`, `ai_generated`, `missed_follow_up`, `recurrence_group_id`, dst — sudah tercakup di `005_create_tasks.sql`), karena menambah kolom lewat `ALTER TABLE` pada tabel yang sudah berisi data produksi itu berisiko. Ini **tidak berlaku** untuk `task_suggestions` dan `ai_insights` — keduanya tabel independen baru, tanpa data existing yang perlu dimigrasikan, jadi membuatnya tetap aman dilakukan belakangan di Fase 3 sesuai tabel Section 1. Jangan buat lebih awal dari yang diperlukan hanya karena alasan "menghindari migrasi nanti" — alasan itu tidak berlaku untuk tabel baru.
+> **Strategi Fase 1**: yang perlu disiapkan lebih awal cuma **kolom-kolom AI di tabel `tasks`** (`is_ambiguous`, `ai_generated`, `missed_follow_up`, `recurrence_group_id`, dst — sudah tercakup di `005_create_tasks.sql`), karena menambah kolom lewat `ALTER TABLE` pada tabel yang sudah berisi data produksi itu berisiko. Ini **tidak berlaku** untuk `task_suggestions`, `ai_insights`, dan `google_calendar_connections` — ketiganya tabel independen baru, tanpa data existing yang perlu dimigrasikan, jadi membuatnya tetap aman dilakukan belakangan sesuai jadwal fase masing-masing. Jangan buat lebih awal dari yang diperlukan hanya karena alasan "menghindari migrasi nanti" — alasan itu tidak berlaku untuk tabel baru.
 
 ---
 

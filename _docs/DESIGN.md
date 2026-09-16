@@ -82,9 +82,16 @@ The mood is **quiet but assertive** — no gradients, no colorful badges, no mot
 - **Hover/Press State:** Simple opacity dip (0.85) on press, 150ms — no shadow lift, keeps the flat aesthetic
 
 ### Bottom Navigation
-- Matches reference pattern directly: 3-4 icon-only items in a floating pill container (Warm Off-White background, Hairline Gray border), active item shown as solid Ink Black circle with white icon
-- Icons: outline style, 22px, single stroke weight
-- No text labels — icon-only, consistent with the minimal-surface philosophy
+
+3 ikon tetap (tidak ada tab ke-4 atau ke-5) dalam floating pill container (Warm Off-White background, Hairline Gray border):
+
+| Posisi | Ikon | Tab |
+|---|---|---|
+| Kiri | `checklist` outline | To-do list (accordion mingguan) |
+| Tengah | `calendar` outline | Calendar (time-block view) |
+| Kanan | `person`/`user` outline | Profile (settings + Goals) |
+
+Active item ditampilkan sebagai solid Ink Black circle dengan white icon — berlaku untuk ketiga ikon. Icon size 22px, single stroke weight, tanpa text label (icon-only, konsisten dengan minimal-surface philosophy).
 
 ### Onboarding Illustration
 - **Style:** Thin single-weight line art, monochrome (Charcoal strokes on Warm Off-White), small playful accents (stars, dots) allowed — this is the ONE place personality is allowed to show
@@ -96,12 +103,34 @@ The mood is **quiet but assertive** — no gradients, no colorful badges, no mot
 - **Placeholder:** Warm Gray, plain
 - **Brain-dump entry point:** Rendered as a distinct pill button (mic/sparkle icon + "Brain-dump" label) sitting beside the plain text input, both anchored at the bottom of the active day block
 
+### Calendar Tab Components
+
+> CONST-07 applies: tidak ada warna baru. Semua warna mengacu pada palet di Section 2.
+
+#### Timeline / Time-Block View
+- **Layout:** Vertical scroll, jam sebagai sumbu (mis. 06:00–22:00), garis Hairline Gray tiap jam, label jam di kiri dalam Warm Gray.
+- **Task/habit block:** Solid Paper Gray background, 8px rounded corners, judul task (Charcoal), durasi ditunjukkan lewat tinggi block relatif terhadap skala jam. **TIDAK ada checkbox di sini** (read-only, lihat PRD.md Calendar Tab).
+- **Event Google Calendar (Tahap B):** Visual dibedakan tipis — border-dashed 1px Hairline Gray, background transparan (bukan Paper Gray solid), tanpa aksi tap selain "lihat detail". Tidak memakai warna baru di luar palet (CONST-07).
+- **Unscheduled section:** Strip di atas timeline (sebelum jam 06:00), berisi task tanpa waktu spesifik — style sama seperti Day Strip collapsed di To-do list, supaya konsisten secara visual antar-tab.
+- **Navigasi hari:** Swipe kiri/kanan atau date-picker minimal di header, tidak perlu month-grid penuh di v1 — cukup 1 hari dalam fokus, mirip pola To-do list yang sudah auto-expand 1 hari aktif.
+
+### Profile Tab — Goals Section
+
+Goals ditampilkan sebagai section dalam tab Profile, bukan tab terpisah (CONST-03). Pola visual menggunakan komponen yang sudah ada — tidak ada komponen baru:
+
+- **Goal list item:** Menggunakan pola visual task row yang sudah ada — title (Charcoal, Body-strong) + status label (Warm Gray, Meta size) + deadline (Warm Gray, Meta size). Tidak ada card wrapper, tidak ada shadow.
+- **Status badge:** Text label inline (ACTIVE / DONE / ARCHIVED) dalam Warm Gray — bukan chip berwarna.
+- **Tap target:** Seluruh baris tappable, expand ke daftar sub-task/progres goal.
+- **Empty state:** Thin line-art illustration + CTA "Tambah goal pertamamu" (pola onboarding, sesuai Section 4 Onboarding Illustration).
+
 ## 5. Layout Principles
 
 ### Grid & Structure
 - **Single-column, mobile-only** for v1 — no responsive grid needed (no web dashboard in scope)
 - **Max content width:** phone-native, no tablet layout considerations for MVP
-- **Vertical stack order:** Active day header → task rows → add-task/brain-dump input → collapsed day strips (remaining week)
+- **Vertical stack order (To-do list tab):** Active day header → task rows → add-task/brain-dump input → collapsed day strips (remaining week)
+- **Vertical stack order (Calendar tab):** Date navigation header → Unscheduled strip → Time-block grid (06:00–22:00)
+- **Vertical stack order (Profile tab):** User info → Settings section → Goals section
 
 ### Whitespace Strategy
 - **Base unit:** 8px micro-spacing, 16px component spacing
@@ -134,7 +163,7 @@ The mood is **quiet but assertive** — no gradients, no colorful badges, no mot
 ### Component Prompts
 - "Create a day-strip block with 16px rounded corners, Paper Gray background, bold uppercase day name, full-width tap target"
 - "Design a task row with an outline circle checkbox that fills Ink Black with a white check on completion, title strikethrough + gray on done"
-- "Add a floating pill bottom nav with 4 outline icons, active icon shown as solid Ink Black circle with white icon"
+- "Add a floating pill bottom nav with 3 outline icons (checklist, calendar, user), active icon shown as solid Ink Black circle with white icon"
 
 ### Incremental Iteration
 1. Work on ONE component per pass (e.g., "refine the follow-up chip banner")

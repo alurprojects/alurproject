@@ -14,6 +14,7 @@
 | LLM Provider | Gemini 1.5 Flash (primary), Groq (fallback/cepat) | Murah, context window besar, cepat untuk task ringan |
 | Scheduled Jobs | Supabase `pg_cron` + Edge Functions | Nightly & weekly job tanpa server terpisah |
 | Voice-to-Text (Fase 3) | Gemini Audio API atau Whisper API | Brain-dump via suara |
+| Google Calendar API (Tahap B) | OAuth 2.0 + REST API, scope `calendar.readonly` | Fetch event GCal untuk ditampilkan di Calendar tab sebagai read-only; tidak ada write-back ke GCal |
 | Deployment & Hosting | Vercel Free-Tier (Zero Credit Card) | Backend FastAPI & Web Next.js under `alurproject.web.id` (lihat `_docs/DEPLOYMENT_GUIDE.md`) |
 
 ---
@@ -80,6 +81,8 @@ alur/
 │   │   │   ├── scheduler.py
 │   │   │   ├── reflection.py      # Fase 3
 │   │   │   └── graph.py           # LangGraph compile & wiring
+│   │   ├── integrations/          # Integrasi layanan eksternal
+│   │   │   └── google_calendar.py # Tahap B: OAuth flow + fetch events GCal
 │   │   ├── db/
 │   │   │   └── models.py
 │   │   └── main.py
@@ -110,6 +113,8 @@ alur/
 | `/tasks/{id}/reschedule` | PATCH | Terima/tolak saran pindah hari |
 | `/brain-dump` | POST | Kirim teks/transkrip suara → invoke LangGraph |
 | `/insights?surfaced=true` | GET | Ambil insight mingguan yang layak tampil |
+| `/calendar/connect` | POST | Mulai OAuth flow Google Calendar (Tahap B) — redirect ke Google consent screen, simpan token ke `google_calendar_connections` |
+| `/calendar/events?week=` | GET | Fetch event Google Calendar untuk rentang minggu tertentu dan tampilkan di Calendar tab (Tahap B, read-only) |
 
 Semua endpoint butuh `Authorization: Bearer <supabase_jwt>`, divalidasi via Supabase middleware di FastAPI.
 

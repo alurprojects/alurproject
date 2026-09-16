@@ -2,11 +2,11 @@
 
 **Visi**: Frontend sesederhana kertas coretan. Backend secanggih asisten pribadi otonom. North Star: **DCDC** (task dipilih sadar, bukan sekadar selesai).
 
-**Dihapus permanen**: Harada Method, 8 Pilar/64-Grid, chat sebagai interface utama, multi-tab, web dashboard, gamifikasi, auto-reschedule tanpa izin user.
+**Dihapus permanen**: Harada Method, 8 Pilar/64-Grid, chat sebagai interface utama, web dashboard, gamifikasi, auto-reschedule tanpa izin user.
 
 ---
 
-## UI
+## UI — To-do List (Checklist, Tidak Berubah)
 
 ```
 MONDAY
@@ -26,6 +26,36 @@ WEDNESDAY ── collapsed
 - Task miss tetap di tempat (histori jujur), style redup. Reschedule butuh approval user, tidak otomatis.
 - Follow-up chip cuma untuk task goal-linked atau recurring — bukan semua task miss.
 - Dark/light mode wajib sejak awal. Tidak ada dashboard/grafik di v1.
+
+---
+
+## UI — Calendar Tab (Breakdown Harian & Timebox)
+
+Calendar tab adalah rumah untuk breakdown harian + timebox (bukan To-do list — CONST-01).
+
+```
+[SEP 16, 2026]  <  >
+
+── Unscheduled ──────────────────────
+  Baca buku           (?)
+  Review PR
+
+06:00 ─────────────────────────────
+07:00 │ [████] 5km run  45m
+08:00 │
+09:00 │ [████] Morning standup  30m
+10:00 │
+      ⋮
+```
+
+Isi:
+- Habit hari ini (task dengan `recurrence_rule` terisi)
+- Task dari goals yang `assigned_date` = hari ini
+- Event Google Calendar (Tahap B, read-only — lihat roadmap Fase)
+
+Disusun sebagai time-block vertikal, diurutkan jam. Task/habit tanpa `estimated_minutes`/waktu spesifik dikelompokkan di bagian **Unscheduled** di atas blok waktu, tidak dipaksa masuk slot jam.
+
+**Ini TIDAK menggantikan To-do list** — user tetap centang task di tab To-do list; Calendar cuma representasi ulang data yang sama dalam bentuk waktu. Task di Calendar bersifat **READ-ONLY** untuk status (tidak ada checkbox di sini) — mencegah 2 sumber kebenaran untuk aksi centang; tap task di Calendar cukup navigasi balik ke To-do list pada hari yang sesuai.
 
 ---
 
@@ -77,9 +107,20 @@ Diagram detail: `alur_end_to_end_flow.mermaid`, `alur_agent_sequence.mermaid`.
 
 | Fase | Scope |
 |---|---|
-| 1 | UI accordion + manual add/centang. Tanpa AI. |
-| 2 | Extractor + Scheduler + follow-up, diorkestrasi via LangGraph (sekaligus latihan orchestration). |
+| 1 | UI 3 tab (To-do list accordion, Calendar Tahap A, Profile + Goals) + manual add/centang. Tanpa AI. |
+| 2 | Extractor + Scheduler + follow-up, diorkestrasi via LangGraph. Calendar Tahap B (Google Calendar read-only). |
 | 3 | Reflection Agent + semua cron + saran reschedule + voice-to-text. |
 
+### Google Calendar Integration Roadmap (CONST-04)
+
+| Tahap | Fase | Scope |
+|---|---|---|
+| **Tahap A** | 1 | Calendar tab internal — time-block view dari data ALUR sendiri. Tanpa integrasi GCal. |
+| **Tahap B** | 2 | Google Calendar read-only — OAuth `calendar.readonly`, fetch & tampil event GCal di Calendar tab sebagai block visual berbeda. |
+| **Tahap C** | Belum dijadwalkan | Google Calendar dua-arah (sync penuh) — ditunda tanpa batas waktu sampai Tahap A & B stabil. |
+
+---
+
 ## Non-Goals
-Harada/8-Pilar, chat-first, multi-tab, web dashboard, gamifikasi, auto-reschedule diam-diam.
+
+Harada/8-Pilar, chat-first, web dashboard, gamifikasi, auto-reschedule diam-diam, `learning_style`/personalisasi cara-belajar (tidak dikumpulkan dalam bentuk apa pun — eksplisit maupun implisit, sesuai CONST-05).
