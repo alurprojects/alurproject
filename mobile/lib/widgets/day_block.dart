@@ -83,11 +83,11 @@ class _DayBlockState extends State<DayBlock> {
           Text(
             widget.dayData.dayName.toUpperCase(),
             style: TextStyle(
-              fontSize: 44,
+              fontSize: 50,
               fontWeight: FontWeight.w900,
               letterSpacing: -1.5,
               color: primaryTextColor,
-              height: 1.05,
+              height: 1.0,
             ),
           ),
           const SizedBox(height: 6),
