@@ -7,10 +7,10 @@ ENV_FILE = ROOT_DIR / ".env"
 
 
 class Settings(BaseSettings):
-    # Supabase credentials (read from centralized root .env)
-    PUBLIC_SUPABASE_URL: str
+    # Supabase credentials (read from centralized root .env or environment)
+    PUBLIC_SUPABASE_URL: str = ""
     PUBLIC_SUPABASE_ANON_KEY: str = ""
-    SUPABASE_SERVICE_ROLE_KEY: str
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
     DATABASE_URL: str = ""
 
     # AI Providers (Backend Only)

@@ -10,7 +10,14 @@ def get_supabase_client() -> Client:
     Service role key allows the backend to perform server-controlled operations
     while enforcing business rules and state transitions.
     """
+    url = settings.PUBLIC_SUPABASE_URL or ""
+    key = settings.SUPABASE_SERVICE_ROLE_KEY or ""
+    if not url or not key:
+        raise RuntimeError(
+            "Supabase credentials missing. Please ensure PUBLIC_SUPABASE_URL and "
+            "SUPABASE_SERVICE_ROLE_KEY are configured in environment variables."
+        )
     return create_client(
-        supabase_url=settings.PUBLIC_SUPABASE_URL,
-        supabase_key=settings.SUPABASE_SERVICE_ROLE_KEY,
+        supabase_url=url,
+        supabase_key=key,
     )
