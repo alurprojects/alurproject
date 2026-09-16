@@ -21,6 +21,7 @@ class ApiService {
     final headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      'X-User-Id': '00000000-0000-0000-0000-000000000001',
     };
     if (authToken != null && authToken!.isNotEmpty) {
       headers['Authorization'] = 'Bearer $authToken';

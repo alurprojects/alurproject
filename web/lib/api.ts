@@ -32,6 +32,7 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
   const url = `${BASE_URL}${endpoint}`;
   const headers = {
     'Content-Type': 'application/json',
+    'X-User-Id': '00000000-0000-0000-0000-000000000001',
     ...(options.headers || {}),
   };
 

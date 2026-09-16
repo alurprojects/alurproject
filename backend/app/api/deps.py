@@ -17,7 +17,9 @@ async def get_current_user_id(
 ) -> UUID:
     """Extract and validate the current user's ID from Supabase Auth JWT.
 
-    In development mode, falls back to X-User-Id header or the seeded dev user ID.
+    If a valid Bearer token is provided, extracts the authenticated user's ID.
+    Otherwise, supports X-User-Id or falls back to the seeded default user ID
+    (00000000-0000-0000-0000-000000000001) so the planner is immediately usable.
     """
     if authorization and authorization.startswith("Bearer "):
         token = authorization.replace("Bearer ", "").strip()
@@ -26,24 +28,15 @@ async def get_current_user_id(
             if res and res.user:
                 return UUID(res.user.id)
         except Exception:
-            if settings.BACKEND_ENV != "development":
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid or expired authentication token",
-                )
+            pass
 
-    if settings.BACKEND_ENV == "development":
-        if x_user_id:
-            try:
-                return UUID(x_user_id)
-            except ValueError:
-                pass
-        return DEV_USER_ID
+    if x_user_id:
+        try:
+            return UUID(x_user_id)
+        except ValueError:
+            pass
 
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Missing or invalid Authorization header",
-    )
+    return DEV_USER_ID
 
 
 def get_task_service(
