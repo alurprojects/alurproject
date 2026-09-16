@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/task.dart';
 
@@ -15,17 +13,8 @@ class ApiService {
     const envUrl = String.fromEnvironment('BACKEND_URL');
     if (envUrl.isNotEmpty) return envUrl;
 
-    if (kIsWeb) {
-      return 'http://localhost:8000';
-    }
-    try {
-      if (Platform.isAndroid) {
-        return 'http://10.0.2.2:8000';
-      }
-    } catch (_) {
-      // Platform check may fail on some environments
-    }
-    return 'http://127.0.0.1:8000';
+    // Default production API server:
+    return 'https://api.alurproject.web.id';
   }
 
   Map<String, String> get _headers {
