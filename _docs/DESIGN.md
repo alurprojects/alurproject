@@ -46,31 +46,31 @@ A smooth cascading gradient gives depth across the full week:
 **Primary Font Family:** Inter — geometric grotesk, tight tracking, crisp editorial feel.
 
 ### Hierarchy & Weights
-- **Day Headers (H1):** Extra-bold (900), tight letter-spacing (-1.2px), 38px. E.g. "MONDAY" — always uppercase, prominent, confident anchor of each day.
-- **Date & Time Subtitle:** Regular (400), 13.5px, letter-spacing -0.2px, Muted Warm Gray. E.g. "April, 14 2025 – 9:41am".
+- **Day Headers (H1):** Extra-bold (900), tight letter-spacing (-1.5px), 48px. E.g. "MONDAY" — always uppercase, prominent, confident anchor of each day.
+- **Date & Time Subtitle:** Regular (400), 14px, letter-spacing -0.2px, Muted Warm Gray. E.g. "April, 14 2025 – 9:41am".
 - **Task Title:** Regular (400), 15px, letter-spacing -0.1px. When completed: orange strikethrough.
 - **Meta / Duration Tag:** Regular (400), 12.5px, Muted Warm Gray. E.g. "45m", "(?)".
 - **Placeholder / Add Prompt:** Regular (400), 14.5px, Placeholder Gray.
 
 ### Spacing Principles
-- **Day Header block padding:** 24px horizontal, 24px top padding, 32px bottom padding.
-- **Header to Subtitle:** 5px vertical gap.
-- **Subtitle to First Task:** 22px vertical gap.
+- **Day Header block padding:** 24px horizontal, 36px top padding, 44px bottom padding.
+- **Header to Subtitle:** 8px vertical gap.
+- **Subtitle to First Task:** 26px vertical gap.
 - **Task Rows:** 4.5px vertical padding per row (~9px between task lines).
-- **Task to "Add a new task...":** Generous 48px vertical breathing gap.
-- **Collapsed Day Strips:** 88px height, 24px horizontal padding, vertically centered H1 type.
+- **Task to "Add a new task...":** Generous 56px vertical breathing gap.
+- **Collapsed Day Strips:** 108px height, 24px horizontal padding, vertically centered H1 type.
 
 ## 4. Component Stylings
 
 ### Day Header (Active/Expanded)
 - **Background:** Matched to the day's stepped shade (`lightDayShades[dayIndex]`).
-- **Typography:** H1 day name (38px, w900, uppercase) + Date Subtitle beneath in Muted Warm Gray.
-- **Padding:** 24px horizontal, 24px top, 32px bottom.
+- **Typography:** H1 day name (48px, w900, uppercase) + Date Subtitle beneath in Muted Warm Gray.
+- **Padding:** 24px horizontal, 36px top, 44px bottom.
 
 ### Day Strip (Collapsed)
 - **Background:** Cascading stepped shade for that day.
-- **Height:** 88px full-width tap target.
-- **Typography:** 38px, w900, uppercase day name, vertically centered.
+- **Height:** 108px full-width tap target.
+- **Typography:** 48px, w900, uppercase day name, vertically centered.
 
 ### Task Row
 - **Checkbox:** Square, 17x17px, 3.5px border radius, 1.4px border.

@@ -82,34 +82,38 @@ class _DayBlockState extends State<DayBlock> {
 
     return Container(
       color: backgroundColor,
-      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 24.0, bottom: 32.0),
+      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 36.0, bottom: 44.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Day Header H1 (ExtraBold, all caps)
-          Text(
-            widget.dayData.dayName.toUpperCase(),
-            style: TextStyle(
-              fontSize: 38,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1.2,
-              color: primaryTextColor,
-              height: 1.0,
+          // Day Header H1 (ExtraBold / 900, all caps, prominent)
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              widget.dayData.dayName.toUpperCase(),
+              style: TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.5,
+                color: primaryTextColor,
+                height: 1.0,
+              ),
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 8),
 
           // Date & Time Subtitle (e.g. April, 14 2025 – 9:41am)
           Text(
             _formatDateSubtitle(widget.dayData.date),
             style: TextStyle(
-              fontSize: 13.5,
+              fontSize: 14,
               fontWeight: FontWeight.w400,
               color: secondaryTextColor,
               letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 26),
 
           // Task Rows
           if (widget.dayData.tasks.isNotEmpty) ...[
@@ -125,8 +129,8 @@ class _DayBlockState extends State<DayBlock> {
             ),
           ],
 
-          // Generous breathing space between checkbox tasks and "Add a new task..." (~48px)
-          const SizedBox(height: 48),
+          // Generous breathing space between checkbox tasks and "Add a new task..." (~56px)
+          const SizedBox(height: 56),
 
           // "Add a new task..." input or prompt
           if (_isAdding)
