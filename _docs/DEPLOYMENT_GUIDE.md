@@ -206,16 +206,32 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 
 ## 4. Bagian C — Ringkasan Setting DNS Registrar
 
-Tabel seluruh DNS Records yang perlu dimasukkan pada panel domain `alurproject.web.id`:
+Tabel seluruh DNS Records yang dimasukkan pada panel domain `alurproject.web.id`:
 
 | Type | Name / Host | Target / Value | Keterangan |
 | :--- | :--- | :--- | :--- |
-| **CNAME** | `api` | `cname.vercel-dns.com` | Mengarah ke Backend FastAPI (`alur-backend`) |
-| **A** | `@` (root) | `76.76.21.21` | Mengarah ke Frontend Web Next.js (`alur-web`) |
-| **CNAME** | `www` | `cname.vercel-dns.com` | Redirect otomatis ke domain utama |
+| **A** | `@` atau `alurproject.web.id` | `76.76.21.21` atau `216.198.79.1` *(Gunakan IP persis yang tertera di Vercel Dashboard)* | Mengarah ke Frontend Web Next.js (`alur-web`) |
+| **CNAME** | `api` | `cname.vercel-dns.com` atau `[hash].vercel-dns-[id].com` *(Sesuai yang tertera di Vercel)* | Mengarah ke Backend FastAPI (`alur-backend`) |
+| **CNAME** | `www` | `cname.vercel-dns.com` atau `[hash].vercel-dns-[id].com` *(Sesuai instruksi Vercel saat input www)* | Redirect otomatis ke domain utama |
 
-> **Catatan jika menggunakan Cloudflare DNS**:  
-> Saat pertama kali menambahkan domain di Vercel, ubah icon Cloudflare Proxy menjadi **DNS Only (abu-abu)** selama 2-5 menit agar Vercel dapat menerbitkan sertifikat SSL Let's Encrypt. Setelah status di Vercel valid (centang hijau), Anda bebas mengaktifkan kembali Proxied (oranye) jika diinginkan.
+> **Catatan Penting mengenai Nilai CNAME & IP**:
+> 1. **Vercel Dynamic Verification**: Vercel saat ini dapat memberikan CNAME unik berbasis hash (seperti `...vercel-dns-017.com`) untuk verifikasi keamanan domain otomatis. **Selalu gunakan nilai persis yang ditampilkan di Vercel Dashboard $\rightarrow$ Settings $\rightarrow$ Domains**.
+> 2. **Target CNAME untuk `www`**: Ketika Anda menambahkan `www.alurproject.web.id` di project `alur-web`, Vercel akan otomatis menyarankan opsi *"Redirect to alurproject.web.id"*. Masukkan nilai CNAME yang diminta oleh Vercel pada form DNS registrar Anda.
+> 3. **Catatan jika menggunakan Cloudflare DNS**:
+>    Saat pertama kali menambahkan domain di Vercel, ubah icon Cloudflare Proxy menjadi **DNS Only (abu-abu)** selama 2-5 menit agar Vercel dapat menerbitkan sertifikat SSL Let's Encrypt. Setelah status di Vercel valid (centang hijau), Anda bebas mengaktifkan kembali Proxied (oranye) jika diinginkan.
+
+---
+
+## 4.1 Troubleshooting: "This page doesn't exist" (404 NOT_FOUND)
+
+Jika saat mengakses `https://alurproject.web.id` muncul halaman hitam Vercel bertuliskan *"This page doesn't exist / 404 NOT_FOUND"*:
+- **Penyebab**: Kode server Vercel aktif, namun project `alur-web` di Vercel belum memiliki deployment yang berhasil, atau file folder `web/` di GitHub masih kosong karena belum di-push dari komputer lokal.
+- **Solusi**:
+  1. Jalankan `git status` di komputer lokal untuk memastikan folder `web/` sudah ter-commit.
+  2. Jalankan `git add .`, `git commit -m "feat: deploy web"`, dan `git push origin main`.
+  3. Buka dashboard Vercel pada project **`alur-web`** $\rightarrow$ tab **Deployments**.
+  4. Pastikan deployment terbaru berstatus **Ready (Hijau)**.
+  5. Begitu deployment Ready, refresh `https://alurproject.web.id` dan halaman Weekly Planner ALUR akan langsung tampil.
 
 ---
 

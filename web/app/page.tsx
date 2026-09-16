@@ -1,69 +1,215 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useEffect, useState, useCallback } from 'react';
+import { api, Task, AIInsight } from '@/lib/api';
+import { DayBlock } from './components/DayBlock';
+import { BrainDumpModal } from './components/BrainDumpModal';
+import { InsightBanner } from './components/InsightBanner';
+import { Sparkles, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+
+const DAY_NAMES = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU'];
+
+function getMonday(d: Date): Date {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(date.setDate(diff));
+}
+
+function formatDateISO(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+function formatDateShort(date: Date): string {
+  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+  return date.toLocaleDateString('id-ID', options);
+}
+
+export default function WeeklyPlannerPage() {
+  const [currentMonday, setCurrentMonday] = useState<Date>(() => getMonday(new Date()));
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [insight, setInsight] = useState<AIInsight | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isBrainDumpOpen, setIsBrainDumpOpen] = useState<boolean>(false);
+
+  const todayStr = formatDateISO(new Date());
+  const weekStartStr = formatDateISO(currentMonday);
+
+  // Generate 7 days for the current week
+  const weekDays = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(currentMonday);
+    d.setDate(currentMonday.getDate() + i);
+    const dateStr = formatDateISO(d);
+    return {
+      dayName: DAY_NAMES[i],
+      dateStr,
+      formattedDate: formatDateShort(d),
+      isToday: dateStr === todayStr,
+    };
+  });
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [fetchedTasks, insights] = await Promise.all([
+        api.getTasks(weekStartStr),
+        api.getSurfacedInsights().catch(() => []),
+      ]);
+      setTasks(fetchedTasks || []);
+      setInsight(insights && insights.length > 0 ? insights[0] : null);
+    } catch (err) {
+      console.error('Failed to load tasks:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [weekStartStr]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Week navigation
+  const prevWeek = () => {
+    const next = new Date(currentMonday);
+    next.setDate(currentMonday.getDate() - 7);
+    setCurrentMonday(next);
+  };
+
+  const nextWeek = () => {
+    const next = new Date(currentMonday);
+    next.setDate(currentMonday.getDate() + 7);
+    setCurrentMonday(next);
+  };
+
+  const resetToToday = () => {
+    setCurrentMonday(getMonday(new Date()));
+  };
+
+  // Task actions
+  const handleToggleTask = async (id: string, status: string) => {
+    await api.toggleTask(id, status);
+    await loadData();
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    await api.deleteTask(id);
+    await loadData();
+  };
+
+  const handleClarifyTask = async (id: string, minutes: number) => {
+    await api.clarifyTask(id, minutes);
+    await loadData();
+  };
+
+  const handleFollowUpTask = async (id: string, action: 'LUPA' | 'SKIP' | 'PINDAH') => {
+    await api.followUpTask(id, action);
+    await loadData();
+  };
+
+  const handleRescheduleTask = async (
+    id: string,
+    action: 'ACCEPT' | 'REJECT',
+    targetDate?: string,
+    suggestionId?: string
+  ) => {
+    await api.rescheduleTask(id, action, targetDate, suggestionId);
+    await loadData();
+  };
+
+  const handleAddTask = async (title: string, assignedDate: string) => {
+    await api.createTask(title, assignedDate);
+    await loadData();
+  };
+
+  const handleBrainDumpSubmit = async (text: string) => {
+    await api.brainDump(text);
+    await loadData();
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
+      {/* Top Bar / Header */}
+      <header className="mb-8 flex items-center justify-between gap-4 border-b border-alur-border pb-6">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-alur-ink">
+            ALUR
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xs font-medium text-alur-warmgray mt-0.5">
+            Quiet Monochrome Weekly Notebook
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-2">
+          {/* Week Selector */}
+          <div className="flex items-center rounded-lg border border-alur-border bg-alur-surface/60 p-0.5 text-xs">
+            <button
+              onClick={prevWeek}
+              className="p-1.5 hover:bg-alur-bg rounded text-alur-warmgray hover:text-alur-charcoal transition-colors"
+              title="Minggu Sebelumnya"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={resetToToday}
+              className="px-2.5 py-1 font-semibold text-alur-charcoal hover:bg-alur-bg rounded transition-colors"
+              title="Kembali ke Hari Ini"
+            >
+              Hari Ini
+            </button>
+            <button
+              onClick={nextWeek}
+              className="p-1.5 hover:bg-alur-bg rounded text-alur-warmgray hover:text-alur-charcoal transition-colors"
+              title="Minggu Depan"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
+          {/* Brain-dump FAB */}
+          <button
+            onClick={() => setIsBrainDumpOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-alur-ink text-alur-bg hover:bg-alur-charcoal transition-colors shadow-xs"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">Brain-dump</span>
+          </button>
         </div>
-      </main>
-    </div>
+      </header>
+
+      {/* Surfaced Weekly Insight Banner */}
+      <InsightBanner insight={insight} />
+
+      {/* 7-Day Accordion Container */}
+      <section className="space-y-3">
+        {weekDays.map((day) => {
+          const dayTasks = tasks.filter((t) => t.assigned_date === day.dateStr);
+          return (
+            <DayBlock
+              key={day.dateStr}
+              dayName={day.dayName}
+              dateStr={day.dateStr}
+              formattedDate={day.formattedDate}
+              isToday={day.isToday}
+              tasks={dayTasks}
+              onToggleTask={handleToggleTask}
+              onDeleteTask={handleDeleteTask}
+              onClarifyTask={handleClarifyTask}
+              onFollowUpTask={handleFollowUpTask}
+              onRescheduleTask={handleRescheduleTask}
+              onAddTask={handleAddTask}
+              onOpenBrainDump={() => setIsBrainDumpOpen(true)}
+            />
+          );
+        })}
+      </section>
+
+      {/* Brain Dump Modal Dialog */}
+      <BrainDumpModal
+        isOpen={isBrainDumpOpen}
+        onClose={() => setIsBrainDumpOpen(false)}
+        onSubmit={handleBrainDumpSubmit}
+      />
+    </main>
   );
 }
