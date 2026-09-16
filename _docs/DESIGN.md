@@ -3,71 +3,83 @@
 
 ## 1. Visual Theme & Atmosphere
 
-ALUR embodies a **bold, high-contrast, friendly monochrome workspace**. The interface feels modern, playful yet clean: heavily rounded, confident typography sits on stark pure white space, with pure solid black used as the dominant anchor color for active states, primary actions, and prominent cards.
+ALUR embodies a **calm, matte paper workspace** — the visual feeling of a physical notebook page with clean, quiet structure. Bold, confident grotesk typography sits on warm matte paper with stepped monochromatic shading across days (Monday is the lightest paper shade, cascading progressively deeper toward Sunday). A single vibrant **vermilion orange** accent is used exclusively for completed tasks and active confirmation.
 
-The mood is **friendly and highly legible** — no gradients, no colorful badges. The design relies entirely on stark black-and-white contrast, generous border radii (pill shapes, blobs), and a distinct rounded typeface to provide personality. ALUR's backend does the complex thinking; the UI provides a welcoming, effortless, and slightly playful surface.
+The mood is **clean, tactile, and editorial** — no loud shadows, no rainbow badges, no clutter. The interface stays flat, graphic, and calm, letting daily execution feel as lightweight and deliberate as scribbling on paper.
 
 **Key Characteristics:**
-- Pure black solid blocks and pure white backgrounds for maximum contrast
-- Flat design — no shadows, no gradients; uses thin black outlines or solid black fills to define shapes
-- Friendly, rounded, oversized headline typography
-- Organic "blob" shapes or fully rounded pills for containers and illustrations
-- Icons are thin outline-style, enclosed in circular borders or floating cleanly
+- Warm matte paper background with a smooth 7-step monochromatic gradient from Monday to Sunday
+- Bold, heavy all-caps grotesque typography for day headers (H1 ~38px, ExtraBold/Black 900)
+- Rounded-square checkboxes (17x17px, 3.5px border radius)
+- Vibrant vermilion orange accent (`#FF5420`) used for completed tasks (checkbox fill + strikethrough title)
+- Generous breathing space between the task list and the "Add a new task..." entry point (~48px)
+- Tall, comfortable collapsed day strips (~88px height) with full-width tap targets
 
 ## 2. Color Palette & Roles
 
 ### Primary Foundation
-- **Pure White** (#FFFFFF) — Primary background for the entire app shell and empty surfaces.
-- **Light Gray** (#F5F5F5) — Used very sparingly for inactive states or subtle dividers, though white/black contrast is preferred.
+- **Light Paper Surface** (#EDEBE7) — Primary canvas (Monday). Matte, warm, easy on the eyes.
+- **Dark Graphite Surface** (#4A4947) — Primary canvas for Dark Mode (Monday).
 
-### Anchor & Interactive
-- **Pure Black** (#070600) — The dominant accent and text color. Used for: headings, primary buttons (pill-shaped), active icons, selected checkboxes, and prominent data cards (like progress banners).
+### 7-Day Stepped Monochromatic Cascade
+A smooth cascading gradient gives depth across the full week:
+- **Monday (Day 0):** Light `#EDEBE7` / Dark `#4A4947`
+- **Tuesday (Day 1):** Light `#E2E0DC` / Dark `#403F3D`
+- **Wednesday (Day 2):** Light `#D7D5CF` / Dark `#363533`
+- **Thursday (Day 3):** Light `#CCCAC4` / Dark `#2C2B29`
+- **Friday (Day 4):** Light `#C1BFB9` / Dark `#232221`
+- **Saturday (Day 5):** Light `#B5B3AC` / Dark `#1B1A19`
+- **Sunday (Day 6):** Light `#AAA8A1` / Dark `#131211`
 
 ### Typography & Text Hierarchy
-- **Pure Black** (#070600) — Primary text: day names, task titles, headlines.
-- **Medium Gray** (#9CA3AF) — Secondary text: timestamps, metadata, placeholder text, unselected days.
-- **Thin Black / Dark Gray** — Borders for unselected items, categories, and inputs.
+- **Deep Charcoal** (#22201D light / #F0EEEA dark) — Primary text: day headers, task titles.
+- **Muted Warm Gray** (#8C8A84 light / #A8A6A0 dark) — Secondary text: date/time subtitle, metadata, "(?)" marker.
+- **Placeholder Gray** (#AFAEA8 light / #7A7873 dark) — "Add a new task..." prompt.
+- **Checkbox Outline** (#42403D light / #9E9C96 dark) — 1.4px sharp outline for unchecked tasks.
 
-### Functional States (system feedback only)
-- **Done Accent** — Solid Pure Black filled circle with a white checkmark.
-- **Miss/Alert Terracotta** (#C1502E) — Kept only for dev-reference if absolutely necessary, but visually, errors/misses rely on outline vs solid black patterns.
-- **Info Slate** (#6B7280) — Neutral system text.
+### Functional States & Accent
+- **Vermilion Orange** (#FF5420 / #FF5722) — Checked task accent. Fills the square checkbox with white check icon, and colors the strikethrough title.
+- **Info Slate** (#6B7280) — Neutral system info text.
 
 ## 3. Typography Rules
 
-**Primary Font Family:** Inter (or General Sans as a close alternative) — geometric grotesk, matches the bold/condensed headline style in the reference screens.
+**Primary Font Family:** Inter — geometric grotesk, tight tracking, crisp editorial feel.
 
 ### Hierarchy & Weights
-- **Day Headers (H1):** Extra-bold (800), tight letter-spacing (-0.02em), 2rem-2.5rem. E.g. "MONDAY" — always uppercase, always the loudest element on screen.
-- **Section Labels (H2):** Bold (700), normal spacing, 1.25rem. E.g. "Upcoming", "All".
-- **Task Title (Body-strong):** Medium (500), 1rem. No weight change when done — only strikethrough + gray-out.
-- **Meta/Timestamp:** Regular (400), 0.8125rem, Warm Gray. Date, time, "(?)" marker.
-- **Button/CTA Label:** Semi-bold (600), 0.9375rem, normal spacing.
+- **Day Headers (H1):** Extra-bold (900), tight letter-spacing (-1.2px), 38px. E.g. "MONDAY" — always uppercase, prominent, confident anchor of each day.
+- **Date & Time Subtitle:** Regular (400), 13.5px, letter-spacing -0.2px, Muted Warm Gray. E.g. "April, 14 2025 – 9:41am".
+- **Task Title:** Regular (400), 15px, letter-spacing -0.1px. When completed: orange strikethrough.
+- **Meta / Duration Tag:** Regular (400), 12.5px, Muted Warm Gray. E.g. "45m", "(?)".
+- **Placeholder / Add Prompt:** Regular (400), 14.5px, Placeholder Gray.
 
 ### Spacing Principles
-- Day header block: 1.5rem vertical padding top, 1rem bottom before task list starts
-- Task rows: 0.875rem vertical padding each, separated by 1px Hairline Gray divider (no card wrapper — flat list, not boxed cards)
-- 2rem gap between the active day block and the first collapsed day-strip below it
+- **Day Header block padding:** 24px horizontal, 24px top padding, 32px bottom padding.
+- **Header to Subtitle:** 5px vertical gap.
+- **Subtitle to First Task:** 22px vertical gap.
+- **Task Rows:** 4.5px vertical padding per row (~9px between task lines).
+- **Task to "Add a new task...":** Generous 48px vertical breathing gap.
+- **Collapsed Day Strips:** 88px height, 24px horizontal padding, vertically centered H1 type.
 
 ## 4. Component Stylings
 
 ### Day Header (Active/Expanded)
-- **Background:** Warm Off-White (not black — reserve black for buttons/nav only, unlike the reference screens' black hero cards)
-- **Typography:** H1 day name + meta line (date, time) directly beneath in Warm Gray
-- **Corner Style:** None — this is a page-level header, not a card
+- **Background:** Matched to the day's stepped shade (`lightDayShades[dayIndex]`).
+- **Typography:** H1 day name (38px, w900, uppercase) + Date Subtitle beneath in Muted Warm Gray.
+- **Padding:** 24px horizontal, 24px top, 32px bottom.
 
 ### Day Strip (Collapsed)
-- **Background:** Paper Gray, darkening slightly for days further in the future (subtle depth cue, mirrors the reference's cascading gray blocks)
-- **Corner Style:** 16px rounded corners, full-width block
-- **Typography:** Bold day name only, no meta line, vertically centered
-- **Tap target:** Full strip height (min 56px)
+- **Background:** Cascading stepped shade for that day.
+- **Height:** 88px full-width tap target.
+- **Typography:** 38px, w900, uppercase day name, vertically centered.
 
 ### Task Row
-- **Layout:** Checkbox (left) — Title (flex) — optional `(?)` marker (right)
-- **Checkbox:** Outline circle, 20px, fills Ink Black with white check icon when tapped
-- **Done state:** Title gets strikethrough + Warm Gray color shift, checkbox fills solid Ink Black
-- **Ambiguous marker `(?)`:** Small Warm Gray superscript-style badge, tap opens inline input row (no modal)
-- **Divider:** 1px Hairline Gray beneath each row, no card boxing
+- **Checkbox:** Square, 17x17px, 3.5px border radius, 1.4px border.
+  - *Unchecked:* Transparent fill, Checkbox Outline border.
+  - *Checked:* Solid Vermilion Orange fill + border, white check icon.
+- **Title:** 15px, 11px margin from checkbox.
+  - *Unchecked:* Deep Charcoal.
+  - *Checked:* Vermilion Orange with matching strikethrough line.
+- **Ambiguous Marker `(?)`:** 14px Muted Warm Gray text next to task title; tap expands inline clarification.
 
 ### Follow-up / Reschedule Chip
 - **Style:** Full-width inline banner directly under the relevant task, Paper Gray background, 12px rounded corners

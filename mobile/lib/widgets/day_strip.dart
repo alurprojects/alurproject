@@ -34,7 +34,7 @@ class DayStrip extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: double.infinity,
-          height: 94,
+          height: 88,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           alignment: Alignment.centerLeft,
           child: Row(
@@ -49,9 +49,9 @@ class DayStrip extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 38,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: -1.0,
+                      letterSpacing: -1.2,
                       color: textColor,
-                      height: 1.05,
+                      height: 1.0,
                     ),
                   ),
                 ),

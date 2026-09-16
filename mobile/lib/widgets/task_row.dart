@@ -46,40 +46,36 @@ class _TaskRowState extends State<TaskRow> {
         isDark ? AppColors.darkCheckboxBorder : AppColors.lightCheckboxBorder;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Circular Checkbox (fills solid pure black on completion, white check icon)
+              // Square Checkbox with rounded corners (matches notebook reference mockup)
               GestureDetector(
                 onTap: () => widget.onToggle(!isDone),
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
+                  padding: const EdgeInsets.only(right: 11.0),
                   child: Container(
-                    width: 20,
-                    height: 20,
+                    width: 17.5,
+                    height: 17.5,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isDone
-                          ? (isDark ? AppColors.pureWhite : AppColors.pureBlack)
-                          : Colors.transparent,
+                      color: isDone ? AppColors.orangeAccent : Colors.transparent,
+                      borderRadius: BorderRadius.circular(3.5),
                       border: Border.all(
-                        color: isDone
-                            ? (isDark ? AppColors.pureWhite : AppColors.pureBlack)
-                            : checkboxBorderColor,
-                        width: 1.5,
+                        color: isDone ? AppColors.orangeAccent : checkboxBorderColor,
+                        width: 1.4,
                       ),
                     ),
                     child: isDone
-                        ? Center(
+                        ? const Center(
                             child: Icon(
                               Icons.check,
-                              size: 13,
-                              color: isDark ? AppColors.pureBlack : AppColors.pureWhite,
+                              size: 12.5,
+                              color: Colors.white,
                               weight: 900,
                             ),
                           )
@@ -93,13 +89,13 @@ class _TaskRowState extends State<TaskRow> {
                 child: Text(
                   widget.task.title,
                   style: TextStyle(
-                    color: isDone ? metaColor : primaryTextColor,
-                    fontSize: 15.5,
-                    fontWeight: isDone ? FontWeight.w400 : FontWeight.w500,
+                    color: isDone ? AppColors.orangeAccent : primaryTextColor,
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w400,
                     letterSpacing: -0.1,
                     decoration: isDone ? TextDecoration.lineThrough : null,
-                    decorationColor: metaColor,
-                    decorationThickness: 1.5,
+                    decorationColor: AppColors.orangeAccent,
+                    decorationThickness: 1.4,
                   ),
                 ),
               ),

@@ -11,9 +11,9 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: AppColors.lightBackground,
       colorScheme: const ColorScheme.light(
         surface: AppColors.lightBackground,
-        primary: AppColors.pureBlack,
+        primary: AppColors.lightTextPrimary,
         onPrimary: Colors.white,
-        onSurface: AppColors.pureBlack,
+        onSurface: AppColors.lightTextPrimary,
       ),
       textTheme: baseTextTheme.apply(
         bodyColor: AppColors.lightTextPrimary,
