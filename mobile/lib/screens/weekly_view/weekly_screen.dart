@@ -368,11 +368,12 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
+        toolbarHeight: 42,
         title: Text(
           'ALUR',
           style: TextStyle(
             letterSpacing: 2.0,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w900,
             color: primaryTextColor,
           ),
@@ -386,7 +387,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
               style: TextStyle(
                 color: primaryTextColor,
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: 13,
               ),
             ),
           ),
@@ -395,7 +396,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
             tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
             icon: Icon(
               isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-              size: 20,
+              size: 19,
               color: primaryTextColor,
             ),
             onPressed: widget.onToggleTheme,
@@ -481,24 +482,26 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
 
                     // Week Selector Bar
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 2.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.arrow_back_ios, size: 16, color: primaryTextColor),
+                            icon: Icon(Icons.arrow_back_ios, size: 14, color: primaryTextColor),
+                            visualDensity: VisualDensity.compact,
                             onPressed: _previousWeek,
                           ),
                           Text(
                             weekRangeText,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: secondaryTextColor,
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.arrow_forward_ios, size: 16, color: primaryTextColor),
+                            icon: Icon(Icons.arrow_forward_ios, size: 14, color: primaryTextColor),
+                            visualDensity: VisualDensity.compact,
                             onPressed: _nextWeek,
                           ),
                         ],

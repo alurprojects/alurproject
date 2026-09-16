@@ -83,11 +83,11 @@ class _DayBlockState extends State<DayBlock> {
           Text(
             widget.dayData.dayName.toUpperCase(),
             style: TextStyle(
-              fontSize: 36,
+              fontSize: 44,
               fontWeight: FontWeight.w900,
-              letterSpacing: -1.0,
+              letterSpacing: -1.5,
               color: primaryTextColor,
-              height: 1.1,
+              height: 1.05,
             ),
           ),
           const SizedBox(height: 6),
@@ -118,7 +118,8 @@ class _DayBlockState extends State<DayBlock> {
             ),
           ],
 
-          const SizedBox(height: 16),
+          // Generous breathing space between checkbox tasks and "Add a new task..."
+          const SizedBox(height: 36),
 
           // "Add a new task..." input or prompt
           if (_isAdding)
