@@ -51,10 +51,13 @@ class _DayBlockState extends State<DayBlock> {
     }
   }
 
-  String _formatDateMeta(String dateStr) {
+  String _formatDateSubtitle(String dateStr) {
     try {
       final parsed = DateTime.parse(dateStr);
-      return DateFormat('MMMM, d yyyy').format(parsed);
+      final dateFormatted = DateFormat('MMMM, d yyyy').format(parsed);
+      final now = DateTime.now();
+      final timeFormatted = DateFormat('h:mma').format(now).toLowerCase();
+      return '$dateFormatted – $timeFormatted';
     } catch (_) {
       return dateStr;
     }
@@ -64,57 +67,45 @@ class _DayBlockState extends State<DayBlock> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final h1Color =
-        isDark ? AppColors.darkTextPrimary : AppColors.charcoal;
-    final metaColor =
-        isDark ? AppColors.darkTextSecondary : AppColors.warmGray;
-    final inputBorderColor =
-        isDark ? AppColors.darkBorder : AppColors.hairlineGray;
-    final activeBorderColor =
-        isDark ? AppColors.darkActiveAccent : AppColors.inkBlack;
+    final primaryTextColor =
+        isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final secondaryTextColor =
+        isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final placeholderColor =
+        isDark ? AppColors.darkTextPlaceholder : AppColors.lightTextPlaceholder;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // H1 Day Header
+          // Day Header H1 (ExtraBold, all caps)
           Text(
             widget.dayData.dayName.toUpperCase(),
             style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-              color: h1Color,
+              fontSize: 36,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -1.0,
+              color: primaryTextColor,
+              height: 1.1,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
 
-          // Date Meta Line
+          // Date & Time Subtitle (e.g. April, 14 2025 – 9:41am)
           Text(
-            _formatDateMeta(widget.dayData.date),
+            _formatDateSubtitle(widget.dayData.date),
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: metaColor,
+              color: secondaryTextColor,
+              letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 22),
 
-          // Task List
-          if (widget.dayData.tasks.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Text(
-                'No tasks scheduled for today.',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  color: metaColor,
-                ),
-              ),
-            )
-          else
+          // Task Rows
+          if (widget.dayData.tasks.isNotEmpty) ...[
             ...widget.dayData.tasks.map(
               (task) => TaskRow(
                 key: ValueKey(task.id),
@@ -125,10 +116,11 @@ class _DayBlockState extends State<DayBlock> {
                 onRescheduleAction: (act) => widget.onRescheduleAction?.call(task, act),
               ),
             ),
+          ],
 
           const SizedBox(height: 16),
 
-          // Inline Add Task / Brain-dump Row
+          // "Add a new task..." input or prompt
           if (_isAdding)
             Row(
               children: [
@@ -139,126 +131,92 @@ class _DayBlockState extends State<DayBlock> {
                     autofocus: true,
                     style: TextStyle(
                       fontSize: 15,
-                      color: isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.charcoal,
+                      color: primaryTextColor,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Task name...',
-                      hintStyle: TextStyle(color: metaColor),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
+                      hintText: 'Add a new task...',
+                      hintStyle: TextStyle(
+                        color: placeholderColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: inputBorderColor),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: activeBorderColor),
-                      ),
+                      isDense: true,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 6),
                     ),
                     onSubmitted: (_) => _submitTask(),
                   ),
                 ),
+                IconButton(
+                  icon: Icon(Icons.check, size: 18, color: primaryTextColor),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: _submitTask,
+                ),
                 const SizedBox(width: 8),
                 IconButton(
-                  onPressed: _submitTask,
-                  icon: Icon(
-                    Icons.check,
-                    color: activeBorderColor,
-                  ),
-                ),
-                IconButton(
+                  icon: Icon(Icons.close, size: 18, color: secondaryTextColor),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   onPressed: () {
                     setState(() {
                       _isAdding = false;
                       _textController.clear();
                     });
                   },
-                  icon: Icon(
-                    Icons.close,
-                    color: metaColor,
-                  ),
                 ),
               ],
             )
           else
             Row(
               children: [
-                // Add task text button
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _isAdding = true;
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.add,
-                            size: 18,
-                            color: metaColor,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Add a new task...',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: metaColor,
-                            ),
-                          ),
-                        ],
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isAdding = true;
+                    });
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Text(
+                      'Add a new task...',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                        color: placeholderColor,
+                        letterSpacing: -0.1,
                       ),
                     ),
                   ),
                 ),
-
-                // Brain-dump Pill Button (from DESIGN.md)
-                if (widget.onOpenBrainDump != null) ...[
-                  const SizedBox(width: 8),
+                const Spacer(),
+                if (widget.onOpenBrainDump != null)
                   GestureDetector(
                     onTap: widget.onOpenBrainDump,
-                    behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.darkActiveAccent
-                            : AppColors.inkBlack,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.mic_none,
                             size: 16,
-                            color: isDark ? Colors.black : Colors.white,
+                            color: placeholderColor,
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 4),
                           Text(
                             'Brain-dump',
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.black : Colors.white,
+                              fontWeight: FontWeight.w500,
+                              color: placeholderColor,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ],
               ],
             ),
         ],

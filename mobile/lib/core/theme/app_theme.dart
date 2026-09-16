@@ -6,23 +6,23 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: AppColors.warmOffWhite,
+      scaffoldBackgroundColor: AppColors.lightBackground,
       colorScheme: const ColorScheme.light(
-        surface: AppColors.warmOffWhite,
-        primary: AppColors.inkBlack,
+        surface: AppColors.lightBackground,
+        primary: AppColors.lightTextPrimary,
         onPrimary: Colors.white,
-        onSurface: AppColors.charcoal,
+        onSurface: AppColors.lightTextPrimary,
       ),
-      dividerColor: AppColors.hairlineGray,
+      dividerColor: Colors.transparent, // No horizontal line dividers
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.warmOffWhite,
+        backgroundColor: AppColors.lightBackground,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: IconThemeData(color: AppColors.charcoal),
+        iconTheme: IconThemeData(color: AppColors.lightTextPrimary),
         titleTextStyle: TextStyle(
-          color: AppColors.charcoal,
+          color: AppColors.lightTextPrimary,
           fontSize: 18,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
@@ -35,11 +35,11 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: AppColors.darkBackground,
       colorScheme: const ColorScheme.dark(
         surface: AppColors.darkBackground,
-        primary: AppColors.darkActiveAccent,
+        primary: AppColors.darkTextPrimary,
         onPrimary: Colors.black,
         onSurface: AppColors.darkTextPrimary,
       ),
-      dividerColor: AppColors.darkBorder,
+      dividerColor: Colors.transparent, // No horizontal line dividers
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.darkBackground,
         elevation: 0,
@@ -48,7 +48,7 @@ abstract final class AppTheme {
         titleTextStyle: TextStyle(
           color: AppColors.darkTextPrimary,
           fontSize: 18,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );

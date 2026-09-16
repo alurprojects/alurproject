@@ -365,10 +365,14 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text(
           'ALUR',
           style: TextStyle(
             letterSpacing: 2.0,
+            fontSize: 16,
             fontWeight: FontWeight.w900,
             color: primaryTextColor,
           ),
@@ -382,14 +386,16 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
               style: TextStyle(
                 color: primaryTextColor,
                 fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
             ),
           ),
-          // Theme switch toggle (prominent, not hidden)
+          // Theme switch toggle
           IconButton(
             tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
             icon: Icon(
               isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              size: 20,
               color: primaryTextColor,
             ),
             onPressed: widget.onToggleTheme,
@@ -502,14 +508,22 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                     // 7-day Accordion List
                     Expanded(
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                        padding: EdgeInsets.zero,
                         itemCount: _weekData?.days.length ?? 0,
                         itemBuilder: (context, index) {
                           final day = _weekData!.days[index];
                           final isExpanded = index == _expandedDayIndex;
 
+                          // Calculate progressive shade index for collapsed days
+                          int shadeIndex = 0;
+                          for (int i = 0; i < index; i++) {
+                            if (i != _expandedDayIndex) {
+                              shadeIndex++;
+                            }
+                          }
+
                           return AnimatedCrossFade(
-                            duration: const Duration(milliseconds: 250),
+                            duration: const Duration(milliseconds: 220),
                             firstCurve: Curves.easeInOut,
                             secondCurve: Curves.easeInOut,
                             crossFadeState: isExpanded
@@ -527,6 +541,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                             secondChild: DayStrip(
                               dayName: day.dayName,
                               taskCount: day.tasks.length,
+                              shadeIndex: shadeIndex,
                               onTap: () {
                                 setState(() {
                                   _expandedDayIndex = index;

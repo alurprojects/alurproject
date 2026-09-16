@@ -4,12 +4,14 @@ import '../core/constants/app_colors.dart';
 class DayStrip extends StatelessWidget {
   final String dayName;
   final int taskCount;
+  final int shadeIndex;
   final VoidCallback onTap;
 
   const DayStrip({
     super.key,
     required this.dayName,
     required this.taskCount,
+    this.shadeIndex = 0,
     required this.onTap,
   });
 
@@ -17,47 +19,53 @@ class DayStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final backgroundColor =
-        isDark ? AppColors.darkSurface : AppColors.paperGray;
-    final textColor =
-        isDark ? AppColors.darkTextPrimary : AppColors.charcoal;
-    final metaColor =
-        isDark ? AppColors.darkTextSecondary : AppColors.warmGray;
+    final shades = isDark ? AppColors.darkDayShades : AppColors.lightDayShades;
+    final safeIndex = shadeIndex.clamp(0, shades.length - 1);
+    final backgroundColor = shades[safeIndex];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Material(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 56),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  dayName.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    color: textColor,
-                  ),
+    final textColor =
+        isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final metaColor =
+        isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+
+    return Material(
+      color: backgroundColor,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          height: 68,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          alignment: Alignment.centerLeft,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                dayName.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.6,
+                  color: textColor,
                 ),
-                if (taskCount > 0)
-                  Text(
+              ),
+              if (taskCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
                     '$taskCount',
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                       color: metaColor,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),
