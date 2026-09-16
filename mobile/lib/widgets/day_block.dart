@@ -82,7 +82,7 @@ class _DayBlockState extends State<DayBlock> {
 
     return Container(
       color: backgroundColor,
-      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 20.0, bottom: 28.0),
+      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 28.0, bottom: 32.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -97,7 +97,7 @@ class _DayBlockState extends State<DayBlock> {
               height: 1.05,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
 
           // Date & Time Subtitle (e.g. April, 14 2025 – 9:41am)
           Text(
@@ -109,7 +109,7 @@ class _DayBlockState extends State<DayBlock> {
               letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 24),
 
           // Task Rows
           if (widget.dayData.tasks.isNotEmpty) ...[
