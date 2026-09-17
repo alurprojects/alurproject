@@ -61,14 +61,14 @@ class _AuthScreenState extends State<AuthScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Spacer(flex: 2),
+                        const Spacer(flex: 3),
                         
                         // Illustration with Glow
                         const Center(
-                          child: AuthIllustration(),
+                          child: AuthIllustration(height: 480),
                         ),
                         
-                        const Spacer(flex: 2),
+                        const SizedBox(height: 28),
                         
                         // Welcome Text
                         const Text(
@@ -81,7 +81,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         const Text(
                           'Your realistic daily planner.',
                           style: TextStyle(
@@ -92,7 +92,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           textAlign: TextAlign.center,
                         ),
                         
-                        const Spacer(flex: 3),
+                        const SizedBox(height: 28),
                         
                         // Google Sign In Button
                         if (_isLoading)
@@ -111,7 +111,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             text: 'Continue with Google',
                           ),
                         
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                         
                         // Terms
                         const Text(
@@ -123,7 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           textAlign: TextAlign.center,
                         ),
                         
-                        const Spacer(flex: 1),
+                        const Spacer(flex: 2),
                       ],
                     ),
                   ),
