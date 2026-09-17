@@ -1,8 +1,8 @@
 # ALUR — Deployment & Infrastructure Guide
 
 > [!NOTE]
-> **Status Deployment: SEMENTARA (MVP Fase Awal)**
-> Dokumen ini saat ini menggunakan **Vercel Free-Tier** secara penuh (baik untuk Web maupun Backend). Ini adalah solusi sementara agar MVP bisa rilis 100% gratis tanpa kartu kredit. Ke depannya, ketika logika LangGraph AI menjadi lebih kompleks dan memakan waktu >10 detik, **Backend (FastAPI) wajib dimigrasikan ke VPS Lokal**, sementara Web (Next.js) bisa tetap di Vercel.
+> **Status Deployment: Rencana Bertahap (Governing Decision)**
+> Dokumen ini saat ini menggunakan **Vercel Free-Tier (Tahap 1)** secara penuh. Jika batas 10 detik mulai sering tercapai, backend akan dimigrasikan ke **Cloudflare Workers Free-Tier (Tahap 2)** (hanya jika modul AI bisa diadaptasi tanpa LangGraph), dan terakhir ke **VPS Berbayar (Tahap 3)** jika batasan tahap sebelumnya tak dapat dihindari. Frontend Web (Next.js) tetap di Vercel.
 
 Dokumen ini adalah panduan teknis operasional (*step-by-step*) untuk mengonfigurasi, mendeploy, dan mengintegrasikan **Backend (FastAPI)** dan **Web Frontend (Next.js)** ke platform **Vercel** dengan domain kustom **`alurproject.web.id`**, beroperasi pada **100% Free-Tier (Zero Credit Card Required)**.
 
@@ -43,12 +43,15 @@ Dokumen ini adalah panduan teknis operasional (*step-by-step*) untuk mengonfigur
 
 ---
 
-## 2. Bagian A — Konfigurasi & Deployment Backend (FastAPI) di Vercel
+## 2. Bagian A — Konfigurasi & Deployment Backend (FastAPI) di Vercel (Tahap 1)
 
 Backend FastAPI dideploy sebagai **Serverless Function Python** di Vercel. 
 
 > [!WARNING]
-> **Limitasi 10 Detik Vercel Hobby Tier:** Vercel gratis memiliki batas waktu eksekusi maksimal 10 detik per request. AI dan LangGraph harus dioptimasi agar merespons di bawah batas ini. Pastikan Anda menggunakan LLM super cepat seperti **Groq** atau **Gemini Flash**. Jika proses AI sering terkena *Timeout (504 Gateway Time-out)* di kemudian hari, Anda diwajibkan memigrasikan backend ke VPS lokal.
+> **Limitasi 10 Detik Vercel Hobby Tier:** Vercel gratis memiliki batas waktu eksekusi maksimal 10 detik per request. AI dan LangGraph harus dioptimasi agar merespons di bawah batas ini. Pastikan Anda menggunakan LLM super cepat seperti **Groq**. 
+
+### 2.0 Kapan Pindah ke Tahap 2/3?
+*Pindah kalau endpoint `/chat/message` ATAU `/internal/cron/reflection` mulai return 504 Gateway Timeout secara konsisten (bukan sesekali) — pantau lewat log/observability Section 10 `technical.md`.*
 
 ### 2.1 File Konfigurasi di Repositori
 FastAPI dikonfigurasi untuk Vercel Serverless melalui `vercel.json` di root repositori:

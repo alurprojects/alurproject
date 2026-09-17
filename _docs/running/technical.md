@@ -17,11 +17,11 @@ Aplikasi ini menargetkan pengguna berusia 18-35 tahun yang membutuhkan produktiv
 | **Auth** | Supabase Auth (Google OAuth) | Sistem *zero password*, *frictionless onboarding* menggunakan akun Google. |
 | **AI Orchestration** | LangGraph | Mengelola *state machine* dan alur logika antar-*agent* AI. |
 | **Agent Runtime** | LangChain | *Wrapper* standar untuk pemanggilan prompt/LLM per *node* dalam ekosistem. |
-| **LLM Provider** | Gemini 2.0 Flash (primary), Groq (fallback) | Keseimbangan antara biaya (murah) dan performa/kecepatan respons (fast). |
+| **LLM Provider** | Groq (primary real-time), Gemini 2.0 Flash (primary batch/cron) | Groq secara konsisten lebih cepat untuk inference (penting agar Vercel < 10 detik di jalur `/chat/message`). Gemini lebih baik untuk reasoning di background cron. |
 | **Scheduled Jobs** | Supabase `pg_cron` + Edge Functions | Eksekusi *job* otomatis untuk *nightly reflection* dan *weekly planning*. |
 | **Voice-to-Text** *(Fase 3)* | Gemini Audio API / Whisper | Mendukung input *brain-dump* via suara di masa mendatang. |
 | **Google Calendar** *(Tahap B)* | OAuth 2.0 REST, `calendar.readonly` | Membaca *events* (*read-only*) untuk mengkalkulasi waktu kosong. |
-| **Deployment** | Vercel Free-Tier (Sementara / MVP) | *Hosting* 100% Serverless. **Catatan:** Solusi sementara sebelum migrasi ke VPS, karena batas eksekusi Vercel 10 detik. |
+| **Deployment** | Vercel Free-Tier (Tahap 1) — fallback: Cloudflare Workers *[perlu verifikasi dukungan Python sebelum eksekusi]* → VPS berbayar (Tahap 3) | *Hosting* 100% Serverless. **Catatan:** Solusi sementara bertahap karena batas eksekusi Vercel 10 detik. |
 
 ---
 
@@ -232,6 +232,14 @@ graph.add_edge("scheduler", "respond")
 - `ai_response`: Balasan *text* final.
 - `conversation_context`: Riwayat percakapan selama 7 hari terakhir.
 - `mood_indicator`: Deteksi *mood* dari sistem adaptif.
+
+### Batching untuk Cron (Vercel 10s Limit)
+Karena tiap invocation Vercel dibatasi ~10 detik, `weekly-reflection` TIDAK memproses semua user aktif dalam 1 kali panggilan begitu jumlah user bertambah. Pola yang dipakai:
+
+1. Endpoint `/internal/cron/reflection` ambil batch kecil (misal 5 user) dari `users_active_this_week()`, mulai dari `last_user_id` di `cron_batch_state` (kalau NULL/run_date beda, mulai dari awal)
+2. Proses 5 user itu, update `last_user_id`, kalau masih ada sisa → return signal "continue"
+3. cron-job.org dikonfigurasi memanggil endpoint ini berulang setiap 1 menit (bukan cuma sekali) sampai completed = TRUE
+4. Kalau jumlah user masih kecil (MVP awal, <30 user aktif/minggu), 1 batch kemungkinan besar sudah cukup — mekanisme ini baru benar-benar diuji begitu user bertambah, tapi strukturnya sudah siap dari awal supaya tidak perlu migrasi skema nanti.
 
 ---
 

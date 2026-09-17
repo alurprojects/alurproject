@@ -298,6 +298,15 @@ CREATE INDEX conversation_logs_user_type_idx
 -- Untuk Companion Agent context window: 20 pesan terakhir
 CREATE INDEX conversation_logs_user_recent_idx
     ON conversation_logs (user_id, created_at DESC);
+
+-- Index untuk cron retensi (pending deletion)
+CREATE INDEX conversation_logs_retention_notify_idx
+    ON conversation_logs (created_at)
+    WHERE pending_deletion_notified_at IS NULL AND retention_override = FALSE;
+
+CREATE INDEX conversation_logs_retention_delete_idx
+    ON conversation_logs (pending_deletion_notified_at)
+    WHERE pending_deletion_notified_at IS NOT NULL AND retention_override = FALSE;
 ```
 
 ### Row Level Security (RLS)
@@ -475,7 +484,33 @@ Nightly cron (00:00 timezone)
 
 ---
 
-## 11. Cron Jobs (`pg_cron`)
+## 11. Helper Functions & Batch State untuk Cron
+
+```sql
+CREATE TABLE cron_batch_state (
+    job_name      TEXT PRIMARY KEY,
+    last_user_id  UUID,
+    run_date      DATE NOT NULL,
+    completed     BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE OR REPLACE FUNCTION users_active_this_week()
+RETURNS TABLE(user_id UUID) AS $$
+    SELECT DISTINCT u.id
+    FROM users u
+    WHERE EXISTS (
+        SELECT 1 FROM tasks t
+        WHERE t.user_id = u.id AND t.updated_at > NOW() - INTERVAL '7 days'
+    ) OR EXISTS (
+        SELECT 1 FROM conversation_logs c
+        WHERE c.user_id = u.id AND c.created_at > NOW() - INTERVAL '7 days'
+    );
+$$ LANGUAGE sql STABLE;
+```
+
+---
+
+## 12. Cron Jobs (`pg_cron`)
 
 ```sql
 -- 1. Nightly Status Check (tiap jam, timezone-aware per user)
@@ -498,19 +533,19 @@ SELECT cron.schedule(
     '0 15 * * 0',
     $$
         SELECT net.http_post(
-            url := current_setting('app.backend_url') || '/internal/cron/recurrence',
+            url := current_setting('app.backend_url') || '/internal/cron/recurrence?only_active=true',
             headers := jsonb_build_object('Authorization', 'Bearer ' || current_setting('app.cron_secret'))
         );
     $$
 );
 
--- 3. Weekly Reflection — ENHANCED: sekarang juga proses conversation_logs
+-- 3. Weekly Reflection — ENHANCED: proses conversation_logs + batching support
 SELECT cron.schedule(
     'weekly-reflection',
     '30 15 * * 0',
     $$
         SELECT net.http_post(
-            url := current_setting('app.backend_url') || '/internal/cron/reflection',
+            url := current_setting('app.backend_url') || '/internal/cron/reflection?only_active=true',
             headers := jsonb_build_object('Authorization', 'Bearer ' || current_setting('app.cron_secret'))
         );
     $$
@@ -548,7 +583,7 @@ SELECT cron.schedule(
 
 ---
 
-## 12. Migrasi: Urutan Eksekusi
+## 13. Migrasi: Urutan Eksekusi
 
 ```
 001_create_enum_types.sql               -- Semua CREATE TYPE (termasuk chat_role, chat_message_type, insight_type)
@@ -569,7 +604,7 @@ SELECT cron.schedule(
 
 ---
 
-## 13. Checklist RLS (Verifikasi)
+## 14. Checklist RLS (Verifikasi)
 
 ```sql
 SELECT tablename, rowsecurity
@@ -581,7 +616,7 @@ ORDER BY tablename;
 
 ---
 
-## 14. Environment Variables
+## 15. Environment Variables
 
 Lihat `ENV_GUIDE.md` untuk panduan lengkap. Variabel khusus database:
 
