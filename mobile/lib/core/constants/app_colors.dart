@@ -41,17 +41,19 @@ abstract final class AppColors {
     Color(0xFF131211), // Sunday (Day 6)
   ];
 
+  // Canonical ALUR Tokens (DESIGN.md)
+  static const Color warmOffWhite = Color(0xFFFAF9F7); // Background utama
+  static const Color paperGray = Color(0xFFF0EFED);    // Surface sekunder
+  static const Color inkBlack = Color(0xFF111111);     // Primary action/button
+  static const Color charcoal = Color(0xFF1A1A1A);     // Teks utama
+  static const Color warmGray = Color(0xFF7A7772);     // Teks sekunder/meta
+  static const Color hairlineGray = Color(0xFFDEDBD6); // Border & divider tipis
+
   // Legacy & Compatibility Aliases
   static const Color pureWhite = Color(0xFFFFFFFF);
   static const Color pureBlack = Color(0xFF000000);
   static const Color mediumGray = lightTextSecondary;
-  static const Color lightGray = Color(0xFFF0EFED);
-  static const Color warmOffWhite = lightBackground;
-  static const Color paperGray = Color(0xFFDFDDD8);
-  static const Color inkBlack = Color(0xFF1E1C1A);
-  static const Color charcoal = lightTextPrimary;
-  static const Color warmGray = lightTextSecondary;
-  static const Color hairlineGray = Color(0xFFCAC8C3);
+  static const Color lightGray = paperGray;
   static const Color darkSurface = Color(0xFF454442);
   static const Color darkBorder = Color(0xFF302F2D);
   static const Color darkActiveAccent = Color(0xFFFFFFFF);

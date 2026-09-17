@@ -1,5 +1,6 @@
 # Environment files (CRITICAL: Single centralized .env must remain private)
 .env
+.env.client
 .env*.local
 !.env.example
 

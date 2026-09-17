@@ -1,16 +1,19 @@
 ---
 name: read-docs
 description: >-
-  Consult and intelligently extract specifications from project documentation in _docs/ 
-  (PRD_v3_FINAL.md, DESIGN.md, technical.md, implementation_plan.md). Use when designing, 
-  implementing, refactoring, or reviewing any feature, UI component, data model, API endpoint, 
-  or AI agent in ALUR to ensure strict alignment with project rules and architecture without 
-  wasting token context.
+  Consult and intelligently extract specifications from project documentation in _docs/running/ 
+  (PRD.md, DESIGN.md, technical.md, DATABASE.md, auth.md, ENV_GUIDE.md, DEPLOYMENT_GUIDE.md). 
+  Use when designing, implementing, refactoring, or reviewing any feature, UI component, data model, 
+  API endpoint, or AI agent in ALUR to ensure strict alignment with project rules and architecture.
 ---
 
 # Project Documentation Guide: ALUR
 
-Gunakan panduan ini untuk membaca dokumentasi di folder `_docs/` secara **cerdas, selektif, dan hemat konteks (progressive disclosure)**. Hindari membaca seluruh file sekaligus jika hanya membutuhkan bagian spesifik.
+> [!IMPORTANT]
+> **Single Source of Truth**: Seluruh dokumentasi aktif proyek ALUR berada di folder **`_docs/running/`**.
+> Folder `_docs/archive/` HANYA berisi arsip historis yang TIDAK BOLEH dirujuk lagi. Jangan pernah membaca dokumen dari `_docs/` root atau `_docs/archive/`.
+
+Gunakan panduan ini untuk membaca dokumentasi di folder `_docs/running/` secara **cerdas, selektif, dan hemat konteks (progressive disclosure)**. Hindari membaca seluruh file sekaligus jika hanya membutuhkan bagian spesifik.
 
 ---
 
@@ -18,46 +21,52 @@ Gunakan panduan ini untuk membaca dokumentasi di folder `_docs/` secara **cerdas
 
 Pilih dokumen yang tepat sesuai konteks pekerjaan yang sedang dikerjakan:
 
-| Kebutuhan / Konteks Tugas | Target Dokumen di `_docs/` | Bagian Kunci yang Perlu Dilihat |
+| Kebutuhan / Konteks Tugas | Target Dokumen di `_docs/running/` | Bagian Kunci yang Perlu Dilihat |
 | :--- | :--- | :--- |
-| **Spesifikasi Produk, UX Spec, Data Model, Filosofi & Aturan Bisnis** | [`PRD_v3_FINAL.md`](./../../_docs/PRD_v3_FINAL.md) | • Section 2 (UI/UX Spec: Accordion, Brain-dump, Inline input)<br>• Section 3 (Data Model: users, goals, tasks)<br>• Section 4 (Rules & Edge Cases) |
-| **Design System, Warna, Tipografi, Komponen UI, Layout, Tema** | [`DESIGN.md`](./../../_docs/DESIGN.md) | • Section 2 (Color Palette: Ink Black, Warm Off-White, dll.)<br>• Section 3 (Typography: Inter/General Sans, H1 uppercase)<br>• Section 4 (Component Specs: Accordion strip, Brain-dump button) |
-| **Tech Stack, API Endpoint, Arsitektur LangGraph, Supabase/DB, Cron** | [`technical.md`](./../../_docs/technical.md) | • Section 1 & 2 (Stack & Architecture diagram)<br>• Section 4 (API Endpoints spec)<br>• Section 5 (LangGraph Pipeline & Agents)<br>• Section 6 (Supabase & pg_cron) |
-| **Konfigurasi Environment Global, Kredensial, Setup .env** | [`ENV_GUIDE.md`](./../../_docs/ENV_GUIDE.md) | • Section 2 (Konvensi `PUBLIC_*` vs Server-only)<br>• Section 3 (Integrasi FastAPI, Next.js, Flutter)<br>• Section 4 (Menambah variabel baru) |
-| **Skema Database, SQL Migrasi, RLS, Cron Jobs, ERD** | [`DATABASE.md`](./../../_docs/DATABASE.md) | • Section 2 (ERD / Relasi antar tabel)<br>• Section 3-7 (DDL per tabel + RLS)<br>• Section 9 (State machine `missed_follow_up`)<br>• Section 10 (pg_cron setup)<br>• Section 11 (Urutan migrasi) |
-| **Roadmap, Tahapan Fase Pengerjaan (Fase 1/2/3), Task Checklist** | [`implementation_plan.md`](./../../_docs/implementation_plan.md) | • Fase 1 (UI Core tanpa AI)<br>• Fase 2 (Brain-Dump + LangGraph)<br>• Fase 3 (Reflection Agent & Scheduled Jobs) |
+| **Visi Produk, Positioning, Core Concept, UX Spec, Data Model** | [`PRD.md`](./../../_docs/running/PRD.md) | • §1 (Visi & Positioning)<br>• §2 (Core Concept: Realistic Planner + AI Companion)<br>• §3 (UI/UX: 4-Tab, Hybrid To-do, Chat Room, Web Scope)<br>• §4 (Data Model) |
+| **Design System, Warna, Tipografi, Komponen UI, Layout, Tema** | [`DESIGN.md`](./../../_docs/running/DESIGN.md) | • §2 (Color Palette: Warm Off-White, Ink Black, Paper Gray)<br>• §3 (Typography: Inter, H1 uppercase extra-bold, spacing)<br>• §4 (Components: Day Header, Day Strip, Task Row, Chat Room)<br>• §6 (CONST constraints) |
+| **Spesifikasi Otentikasi, Sketsa UI Login/SignUp, Alur Auth** | [`auth.md`](./../../_docs/running/auth.md) | • §1 (Metode: Email+Password & Google OAuth)<br>• §2 (Alur Supabase Auth & JWT)<br>• §3 (Sketsa UI Login & SignUp, Form Styling) |
+| **Tech Stack, API Endpoint, LangGraph Architecture, Companion Agent** | [`technical.md`](./../../_docs/running/technical.md) | • §1-2 (Stack & Architecture diagram)<br>• §4 (API Contract: /chat/message, /tasks, /internal/cron)<br>• §5 (LangGraph Pipeline & Conditional Routing)<br>• §6 (Companion Agent 2-Tone: HONEST/GENTLE) |
+| **Konfigurasi Environment Global, Kredensial, Setup .env** | [`ENV_GUIDE.md`](./../../_docs/running/ENV_GUIDE.md) | • §2 (Konvensi `PUBLIC_*` vs Server-only)<br>• §3 (Integrasi FastAPI, Next.js, Flutter `.env.client`)<br>• §4 (Menambah variabel baru) |
+| **Skema Database, SQL Migrasi, RLS, Cron Jobs, ERD** | [`DATABASE.md`](./../../_docs/running/DATABASE.md) | • §2 (ERD incl. conversation_logs)<br>• §5-6 (tasks + conversation_logs DDL & retensi)<br>• §8 (ai_insights + insight_type)<br>• §10 (State machine missed_follow_up)<br>• §11 (pg_cron: nightly, weekly, retention) |
+| **Deployment & Hosting** | [`DEPLOYMENT_GUIDE.md`](./../../_docs/running/DEPLOYMENT_GUIDE.md) | • §2 (Backend FastAPI di Vercel Serverless)<br>• §3 (Web Next.js di Vercel)<br>• §4 (DNS Configuration)<br>• §5 (Cron via cron-job.org) |
+| **Status Audit & Resolusi** | [`feedback.md`](./../../_docs/running/feedback.md) | • Log resolusi audit B1-B6 dan catatan perbaikan arsitektur |
 
 > [!CAUTION]
-> **Otoritas Dokumen PRD**:
-> Selalu jadikan [`PRD_v3_FINAL.md`](./../../_docs/PRD_v3_FINAL.md) sebagai **satu-satunya single source of truth** untuk PRD. Abaikan `PRD.md` lama jika ada perbedaan informasi.
+> **Dokumen Lama**: Semua file di `_docs/archive/` adalah **arsip historis**. Jangan rujuk lagi — gunakan file di `_docs/running/` sebagai satu-satunya source of truth.
 
 ---
 
 ## 2. Prinsip "Smart & Selective Reading" (Hemat Konteks)
 
-Untuk menjaga context window tetap bersih dan efisien:
-
-1. **JANGAN dump seluruh file sekaligus**:
-   - Gunakan pembacaan parsial (`StartLine` & `EndLine` pada `view_file`) untuk membaca bagian yang relevan saja.
-2. **Gunakan pencarian pola lebih dulu (`grep_search`)**:
-   - Jika butuh kode warna spesifik (misal: hex Ink Black, Terracotta): cari `"Color Palette"` atau kode `#` di `DESIGN.md`.
-   - Jika butuh skema tabel `tasks`: cari `"create table"` atau `"tasks"` di `technical.md` atau `PRD_v3_FINAL.md`.
-   - Jika butuh kontrak endpoint: cari nama rute (misal: `/brain-dump`) di `technical.md`.
-3. **Cek Fase Implementasi**:
-   - Sebelum mengeksekusi kode baru, periksa [`implementation_plan.md`](./../../_docs/implementation_plan.md) untuk memastikan fitur yang dibuat sesuai dengan prioritas fase saat ini (hindari over-engineering fitur Fase 2/3 saat masih di Fase 1).
+1. **JANGAN dump seluruh file sekaligus** — gunakan pembacaan parsial (`StartLine` & `EndLine` pada `view_file`).
+2. **Gunakan pencarian pola lebih dulu (`grep_search`)** — misal: cari `"conversation_logs"` di `DATABASE.md` untuk schema Chat Room.
+3. **Cek Fase Implementasi** — Sebelum mengeksekusi kode baru, pastikan fitur sesuai prioritas fase:
+   - **Fase 1**: UI Core (4-tab, hybrid to-do, auth, dark/light, Chat Room shell tanpa AI)
+   - **Fase 2**: Chat Room + LangGraph (Companion Agent, Extractor, Scheduler, conversation_logs)
+   - **Fase 3**: Otonomi penuh (Reflection Agent combined data, cron, voice-to-text, adaptive tuning)
 
 ---
 
 ## 3. Aturan Kritis Proyek ALUR (Core Invariants)
 
-Saat membaca docs dan menghasilkan solusi/kode, pastikan selalu patuh pada prinsip non-negotiable ALUR:
+Saat membaca docs dan menghasilkan solusi/kode, pastikan selalu patuh:
 
-1. **Prinsip UI Minimalis (Kertas Coretan)**:
-   - **TIDAK ADA** dashboard, grafik, tab tambahan, atau gamifikasi. Antarmuka utama adalah 1 layar accordion mingguan.
-   - **Bukan Chat App**: Brain-dump dan klarifikasi task `(?)` dilakukan via input inline 1 baris, BUKAN modal dialog atau antarmuka chat.
-2. **Kedaulatan Keputusan Pengguna (DCDC Metric)**:
-   - AI **TIDAK PERNAH** memindahkan atau menjadwalkan ulang task secara sepihak tanpa konfirmasi eksplisit dari user.
-   - AI hanya memberikan saran 1 baris ringkas: *"AI sarankan pindah ke [Hari] · [Terima] [Abaikan]"*.
-3. **Design Restraint**:
-   - Flat design: tanpa shadow, tanpa gradient. Pemisah menggunakan border tipis (`Hairline Gray`).
-   - Warna `Ink Black (#111111)` HANYA digunakan untuk state aktif atau aksi primer, bukan untuk dekorasi sembarangan.
+1. **Prinsip UI Minimalis + Backend Canggih**:
+   - Frontend sesederhana kertas coretan. Backend secanggih tim asisten pribadi otonom.
+   - TIDAK ADA dashboard, grafik tambahan, atau gamifikasi.
+2. **Chat Room = Brain-dump Diperluas**:
+   - 1 ruang untuk quick capture DAN curhat panjang. AI yang memilah (task/refleksi/curhat).
+   - Semua percakapan tersimpan di `conversation_logs` dan jadi bahan evaluasi AI.
+3. **Kedaulatan Keputusan Pengguna (DCDC)**:
+   - AI TIDAK PERNAH memindahkan task secara sepihak tanpa konfirmasi user.
+   - AI hanya saran: *"AI sarankan pindah ke [Hari] · [Terima] [Abaikan]"*
+4. **Hybrid To-Do**:
+   - Default: Daily Focus (hari ini). Toggle: Weekly accordion (Mon-Sun).
+5. **4-Tab Navigation**:
+   - To-do, Chat Room, Calendar (read-only), Profile
+6. **AI Adaptive Personality**:
+   - Companion Agent menyesuaikan nada (WARM/HONEST/MINIMAL/ENCOURAGING) berdasarkan mood, completion rate, dan konteks.
+7. **Design Restraint**:
+   - Flat design: tanpa shadow, tanpa gradient (kecuali stepped day cascade).
+   - Font: Inter. Accent: Vermilion Orange (#FF5420) hanya untuk task done.
