@@ -92,3 +92,7 @@ Fokus: Refleksi otomatis, penjadwalan ulang, perlindungan data, dan tuning kepri
 - [x] Hubungkan logika *Adaptive Personality* pada Companion Agent (menyesuaikan *tone* berdasarkan tingkat penyelesaian task & insight dari Reflection Agent).
 - [x] Implementasikan alur **Follow-up Chip** di UI untuk task yang bersatus `MISSED` (opsi: FORGOT / SKIPPED / RESCHEDULED).
 - [ ] *(Opsional Fase 3)* Implementasikan input suara (Voice-to-Text) di Chat Room menggunakan Gemini Audio API atau plugin *speech-to-text* lokal.
+
+notes:
+1. berdasarkan psikologi user, maksudnya user bisa konsultasi tentang masalahnya kenapa kok to do list nya selalu menumpuk, lalu AI akan memberikan solusi berdasarkan insight dari Reflection Agent. Nantinya bisa menjadi bahan pertimbangan AI untuk memberikan solusi yang lebih baik.
+2. 
