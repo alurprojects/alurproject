@@ -32,3 +32,28 @@ class AlurState(TypedDict, total=False):
     existing_load_minutes_by_date: Dict[str, int]
     draft_tasks: List[DraftTask]
     scheduled_tasks: List[ScheduledTask]
+
+
+class AlurChatState(TypedDict, total=False):
+    raw_message: str
+    user_id: str
+    today_date: str
+    daily_capacity_hours: float
+    daily_capacity_minutes: int
+    existing_load_minutes_by_date: Dict[str, int]
+    recent_completion_rate: Optional[float]
+    consecutive_misses: Optional[int]
+    recent_insights: Optional[List[str]]
+    conversation_context: List[Dict[str, str]]
+    
+    # Companion classification and tone
+    message_type: str  # 'TASK_CAPTURE' | 'REFLECTION' | 'CHAT' | 'CAPACITY_QUERY'
+    tone_used: str     # 'HONEST' | 'GENTLE'
+    mood_detected: Optional[str]  # e.g., 'overload', 'burnout', or None
+    
+    # Task extraction & scheduling
+    draft_tasks: List[DraftTask]
+    scheduled_tasks: List[ScheduledTask]
+    
+    # Final AI response text
+    ai_response: str

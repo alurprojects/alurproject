@@ -122,61 +122,46 @@ Membuat symlink dari file root `.env` ke `web/.env.local`:
 
 ### C. Mobile App (Flutter)
 
-Flutter (sejak versi 3.7+) memiliki fitur bawaan untuk membaca file `.env` secara langsung saat kompilasi (*compile-time*) menggunakan flag `--dart-define-from-file`.
+Flutter di proyek ALUR menggunakan package `flutter_dotenv` untuk membaca variabel pada saat *runtime*.
 
 > [!CAUTION]
-> **PENTING:** Mobile app HANYA boleh membaca `.env.client`, TIDAK PERNAH `.env` master. Ini mencegah `SUPABASE_SERVICE_ROLE_KEY` dan API key LLM ter-compile ke dalam APK/IPA meski tidak sengaja direferensikan di kode Dart — proteksinya di level file, bukan cuma disiplin coding.
+> **PENTING:** Karena file `.env` digabungkan sebagai aset aplikasi (terbaca di APK/IPA), file `.env` di folder `mobile` **HANYA** boleh berisi variabel berprefix `PUBLIC_*`. File `.env` master dari root tidak boleh disalin mentah-mentah ke dalam aset Flutter!
 
-#### 1. File `.env.client` (di root repo, sejajar `.env`)
-Berisi HANYA variabel berprefix `PUBLIC_*`:
+#### 1. Setup file `.env` di folder `mobile`
+Salin file `.env.client` dari root repo ke dalam direktori `mobile` dengan nama `.env`. File ini **hanya** berisi:
 ```env
 PUBLIC_SUPABASE_URL=https://iajqnfcpljkwhvbicylh.supabase.co
 PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 ```
-File ini di-generate/disalin manual dari `.env`, bukan symlink.
 
 #### 2. Membaca Variabel dalam Kode Dart (`mobile/lib/core/config/env.dart`):
 ```dart
-class AppEnv {
-  static const String supabaseUrl = String.fromEnvironment(
-    'PUBLIC_SUPABASE_URL',
-    defaultValue: '',
-  );
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-  static const String supabaseAnonKey = String.fromEnvironment(
-    'PUBLIC_SUPABASE_ANON_KEY',
-    defaultValue: '',
-  );
+abstract final class AppEnv {
+  static String get supabaseUrl => dotenv.env['PUBLIC_SUPABASE_URL'] ?? '';
+  static String get supabaseAnonKey => dotenv.env['PUBLIC_SUPABASE_ANON_KEY'] ?? '';
 }
 ```
+
+Pastikan `dotenv.load(fileName: ".env");` sudah dipanggil di `main()` pada `main.dart`.
 
 #### 3. Menjalankan / Build Flutter via CLI:
+Karena sudah menggunakan `flutter_dotenv`, Anda tidak perlu lagi menyertakan flag panjang. Cukup jalankan:
 ```bash
 # Menjalankan di emulator / device
-flutter run --dart-define-from-file=../.env.client
+flutter run
 
 # Build APK release
-flutter build apk --dart-define-from-file=../.env.client
+flutter build apk
 ```
 
-#### 4. Konfigurasi VS Code Debugger (`.vscode/launch.json`):
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "ALUR Mobile (Debug)",
-      "request": "launch",
-      "type": "dart",
-      "program": "mobile/lib/main.dart",
-      "toolArgs": [
-        "--dart-define-from-file",
-        "${workspaceFolder}/.env.client"
-      ]
-    }
-  ]
-}
-```
+#### 4. Google Sign-In (Native)
+Untuk menggunakan Native Google Sign-in:
+1. Masuk ke **Google Cloud Console**.
+2. Buat **OAuth 2.0 Client IDs** untuk platform **Android** (masukkan SHA-1 certificate dari keystore) dan **iOS** (masukkan Bundle ID).
+3. Jika menggunakan platform iOS, Client ID perlu ditambahkan di `Info.plist`. Untuk Android, plugin secara otomatis mengaturnya berdasarkan konfigurasi SHA-1 di console.
+4. Anda tidak perlu memasukkan Web Client ID ke dalam kode Flutter. Supabase Auth akan memverifikasi *idToken* Google asalkan Client ID Android/iOS terdaftar di *whitelist* (atau konfigurasi project Firebase/GCP yang sama).
 
 ---
 

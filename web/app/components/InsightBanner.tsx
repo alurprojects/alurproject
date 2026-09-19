@@ -17,7 +17,7 @@ export const InsightBanner: React.FC<InsightBannerProps> = ({ insight }) => {
         <Compass size={16} />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-alur-warmgray mb-1">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-alur-warmgray mb-1 font-title">
           Refleksi Mingguan ALUR
         </h4>
         <p className="text-sm font-normal text-alur-charcoal leading-relaxed">

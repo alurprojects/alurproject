@@ -44,7 +44,7 @@ export const BrainDumpModal: React.FC<BrainDumpModalProps> = ({
         <div className="px-5 py-4 border-b border-alur-border flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles size={18} className="text-alur-ink" />
-            <h3 className="font-bold text-base text-alur-charcoal">Brain-dump AI</h3>
+            <h3 className="font-bold text-base text-alur-charcoal font-title">Brain-dump AI</h3>
           </div>
           <button
             onClick={onClose}

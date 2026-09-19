@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/api_service.dart';
-import '../weekly_view/weekly_screen.dart';
+import '../main_screen.dart';
 import 'auth_screen.dart';
 
 class AuthGate extends StatefulWidget {
@@ -69,15 +69,39 @@ class _AuthGateState extends State<AuthGate> {
       );
     }
 
-    if (_session != null) {
-      final apiService = ApiService(authToken: _session?.accessToken);
-      return WeeklyScreen(
-        apiService: apiService,
-        onToggleTheme: widget.onToggleTheme,
-        isDarkMode: widget.isDarkMode,
-      );
-    }
+    final Widget currentScreen = _session != null
+        ? MainScreen(
+            key: const ValueKey('MainScreen'),
+            apiService: ApiService(authToken: _session?.accessToken),
+            onToggleTheme: widget.onToggleTheme,
+            isDarkMode: widget.isDarkMode,
+          )
+        : const AuthScreen(
+            key: ValueKey('AuthScreen'),
+          );
 
-    return const AuthScreen();
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      reverseDuration: const Duration(milliseconds: 250),
+      switchInCurve: Curves.easeInOutCubic,
+      switchOutCurve: Curves.easeOutCubic,
+      transitionBuilder: (child, animation) {
+        final isEnteringMain = child.key == const ValueKey('MainScreen');
+        if (isEnteringMain) {
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.98, end: 1.0).animate(animation),
+              child: child,
+            ),
+          );
+        }
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+      child: currentScreen,
+    );
   }
 }

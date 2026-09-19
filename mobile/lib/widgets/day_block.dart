@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../core/constants/app_colors.dart';
 import '../models/task.dart';
@@ -92,7 +93,7 @@ class _DayBlockState extends State<DayBlock> {
             alignment: Alignment.centerLeft,
             child: Text(
               widget.dayData.dayName.toUpperCase(),
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 48,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -1.5,

@@ -27,16 +27,15 @@ Tema visual ALUR berfokus pada suasana *calm, matte paper workspace*. Desain ber
 
 ## 3. Typography Rules
 
-**Primary Font Family:** Inter — geometric sans-serif, tight tracking, crisp editorial feel.
-
-### Hierarchy & Weights
-- **Day Headers (H1):** Extra-bold (800), uppercase, tight letter-spacing (-0.02em). Ukuran ditentukan oleh konteks tampilan (Daily Focus vs Day Strip).
-- **Section Headers (H2):** Semi-Bold (600), ukuran 16px, Charcoal.
+ALUR menggunakan tipografi editorial bervolume tinggi (*high-contrast geometric neo-grotesque*) berbasis keluarga font **Inter**:
+- **Title Style & Day Headers (H1 / Display):** **Inter** dengan bobot **Black (900)** atau **Extra-Bold (800)**, uppercase, dan tight letter-spacing (-1.5px / -0.04em). Menghasilkan kesan *bold, solid, authoritative, and tactile editorial* persis seperti mockup acuan (`TUESDAY`, `WEDNESDAY`, dsb). *Bukan* font rounded/condensed seperti Barlow.
+- **Section Headers (H2 / H3) & Modal Titles:** **Inter Bold (700)** / **Extra-Bold (800)**, ukuran 16px - 20px, Charcoal.
   - **Line-height:** 24px. Margin bawah: 16px.
-- **Body Text / Task Text:** Regular (400), ukuran 14px, Charcoal.
+- **Body Text / Task Text:** **Inter Regular (400)** / **Medium (500)**, ukuran 14px, Charcoal.
   - **Line-height:** 20px.
-- **Muted/Meta Text:** Regular (400), ukuran 12px, Warm Gray.
+- **Muted/Meta Text:** **Inter Regular (400)**, ukuran 12px, Warm Gray.
   - **Line-height:** 16px.
+- **Buttons / Actions:** **Inter Semi-Bold (600)** / **Bold (700)**, clean tracking.
 
 ### Spacing Principles (The 8pt Grid System)
 Semua jarak, margin, dan padding **harus merupakan kelipatan dari 4px atau 8px**.
@@ -49,10 +48,10 @@ Semua jarak, margin, dan padding **harus merupakan kelipatan dari 4px atau 8px**
 ## 4. Component Stylings
 
 ### Day Header (Active/Expanded)
-Header hari aktif ditampilkan dengan teks uppercase extra-bold berukuran besar. Background menggunakan Warm Off-White. Tidak menggunakan warna solid Ink Black sebagai latar — Ink Black hanya untuk interaksi.
+Header hari aktif ditampilkan dengan font **Inter Black (900)** / **Extra-Bold (800)**, uppercase, tight letter-spacing (-1.5px), berukuran besar (48px pada mobile, 24px-32px pada web). Background menggunakan Warm Off-White. Tidak menggunakan warna solid Ink Black sebagai latar — Ink Black hanya untuk interaksi.
 
 ### Day Strip (Collapsed)
-Hari yang tidak aktif ditampilkan sebagai strip horizontal minimalis dengan latar **Paper Gray (`#F0EFED`)**. Teks hari uppercase bold, vertically centered.
+Hari yang tidak aktif ditampilkan sebagai strip horizontal minimalis dengan latar **Paper Gray (`#F0EFED`)**. Teks hari menggunakan font **Inter Black (900)** / **Extra-Bold (800)**, uppercase, tight letter-spacing (-1.5px), vertically centered.
 
 ### Task Row
 - **Checkbox:** Lingkaran outline tipis (Hairline Gray border). Saat dicentang → terisi **Ink Black** penuh dengan ikon centang putih.
@@ -103,11 +102,31 @@ Line-art monokrom hitam-putih, gaya terstruktur dan rapi. Warna isi (fill) mengg
 ## 6. Design Constraints (CONST)
 
 - **CONST-01**: Palet warna monokromatik hangat — **Warm Off-White (`#FAF9F7`)** / **Ink Black (`#111111`)** / **Paper Gray (`#F0EFED`)**. TIDAK menggunakan pure white (`#FFFFFF`) atau pure black (`#000000`).
-- **CONST-02**: Tipografi day headers: uppercase, extra-bold (800), tight letter-spacing. TIDAK menggunakan konsep *Mixed-Weight Headers*.
+- **CONST-02**: Tipografi title & day headers: WAJIB menggunakan font **Inter**, uppercase, Black (900) atau Extra-Bold (800), tight letter-spacing (-1.5px / -0.04em). Body & meta text menggunakan font **Inter** (Regular 400). TIDAK menggunakan font narrow/rounded (seperti Barlow) dan TIDAK menggunakan konsep *Mixed-Weight Headers*.
 - **CONST-03**: **MODERATE BORDER RADIUS** (4px - 12px). Hindari kapsul penuh (999px), KECUALI FAB.
 - **CONST-04**: **NO SHADOWS**. Kedalaman diciptakan melalui Paper Gray di atas Warm Off-White.
 
 ---
 
+## 7. Motion & Transition System
+
+ALUR memegang teguh prinsip *quiet, purposeful motion*. Animasi hanya digunakan untuk memberikan kejelasan spasial dan umpan balik fungsional, bukan hiburan visual (*no bouncy, slow, or distracting flourishes*).
+
+### A. Auth Transitions (Login & Logout)
+- **Login Transition (`AuthScreen` → `MainScreen`)**:
+  - **Durasi**: **350ms**
+  - **Kurva (*Easing*)**: `Curves.easeInOutCubic` (atau `cubic-bezier(0.4, 0.0, 0.2, 1)`)
+  - **Efek**: Kombinasi *Fade-in* (0.0 → 1.0) dengan *Subtle Scale Lift* (0.98 → 1.00). Memberi sensasi kanvas kerja yang terangkat lembut ke hadapan pengguna.
+- **Logout Transition (`MainScreen` → `AuthScreen`)**:
+  - **Durasi**: **250ms**
+  - **Kurva (*Easing*)**: `Curves.easeOutCubic`
+  - **Efek**: *Clean Fade Out-In* (Opacity 1.0 → 0.0) langsung ke landing `AuthScreen` untuk transisi pembersihan yang cepat dan privat.
+
+### B. Tab Transitions (4-Tab Bottom Navigation)
+- **State Preservation**: Wajib menggunakan `IndexedStack` (atau setara) agar setiap tab mempertahankan posisi *scroll*, data input, dan status komponen saat pengguna berpindah tab.
+- **Switching Speed**: **Instant (0ms latency)** untuk navigasi tab, dengan perubahan langsung pada ikon navigasi (outline menjadi solid Ink Black) dan label berbobot tebal (`FontWeight.w700`).
+
+---
+
 > [!NOTE]
-> **Sinkronisasi Web:** Sejak web app masuk scope (lihat PRD.md Section 3.6), token warna di file ini juga jadi rujukan untuk `web/tailwind.config.ts` — pastikan nilai hex yang dipakai di Tailwind config disinkronkan ke sini, bukan sebaliknya.
+> **Sinkronisasi Multi-Platform:** Token warna dan konfigurasi tipografi (Inter Black 900 / ExtraBold 800 untuk Title Style & Headers, Inter Regular 400 untuk Body & Meta) di file ini adalah Single Source of Truth untuk implementasi di Web (`web/tailwind.config.ts`, `web/app/globals.css`) dan Mobile Flutter (`mobile/lib/core/theme/app_theme.dart`). Pastikan bobot font dan letter-spacing disinkronkan dari sini ke seluruh platform.

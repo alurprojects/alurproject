@@ -5,7 +5,8 @@ import { api, Task, AIInsight } from '@/lib/api';
 import { DayBlock } from './components/DayBlock';
 import { BrainDumpModal } from './components/BrainDumpModal';
 import { InsightBanner } from './components/InsightBanner';
-import { Sparkles, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { CalendarView } from './components/CalendarView';
+import { Sparkles, ChevronLeft, ChevronRight, RotateCcw, Calendar as CalendarIcon, CheckSquare } from 'lucide-react';
 
 const DAY_NAMES = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU'];
 
@@ -31,6 +32,7 @@ export default function WeeklyPlannerPage() {
   const [insight, setInsight] = useState<AIInsight | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isBrainDumpOpen, setIsBrainDumpOpen] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'todo' | 'calendar'>('todo');
 
   const todayStr = formatDateISO(new Date());
   const weekStartStr = formatDateISO(currentMonday);
@@ -131,7 +133,7 @@ export default function WeeklyPlannerPage() {
       {/* Top Bar / Header */}
       <header className="mb-8 flex items-center justify-between gap-4 border-b border-alur-border pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-alur-ink">
+          <h1 className="text-3xl font-extrabold tracking-tight text-alur-ink font-title">
             ALUR
           </h1>
           <p className="text-xs font-medium text-alur-warmgray mt-0.5">
@@ -140,7 +142,33 @@ export default function WeeklyPlannerPage() {
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Tab Switcher: To-do vs Calendar (PRD 3.6 Scope) */}
+          <div className="flex items-center rounded-lg border border-alur-border bg-alur-surface/60 p-0.5 text-xs">
+            <button
+              onClick={() => setActiveTab('todo')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-colors ${
+                activeTab === 'todo'
+                  ? 'bg-alur-ink text-white'
+                  : 'text-alur-warmgray hover:text-alur-charcoal'
+              }`}
+            >
+              <CheckSquare size={13} />
+              <span>To-do</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('calendar')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-colors ${
+                activeTab === 'calendar'
+                  ? 'bg-alur-ink text-white'
+                  : 'text-alur-warmgray hover:text-alur-charcoal'
+              }`}
+            >
+              <CalendarIcon size={13} />
+              <span>Calendar</span>
+            </button>
+          </div>
+
           {/* Week Selector */}
           <div className="flex items-center rounded-lg border border-alur-border bg-alur-surface/60 p-0.5 text-xs">
             <button
@@ -177,32 +205,42 @@ export default function WeeklyPlannerPage() {
         </div>
       </header>
 
-      {/* Surfaced Weekly Insight Banner */}
-      <InsightBanner insight={insight} />
+      {/* Main View: To-do vs Calendar */}
+      {activeTab === 'todo' ? (
+        <>
+          {/* Surfaced Weekly Insight Banner */}
+          <InsightBanner insight={insight} />
 
-      {/* 7-Day Accordion Container */}
-      <section className="space-y-3">
-        {weekDays.map((day) => {
-          const dayTasks = tasks.filter((t) => t.assigned_date === day.dateStr);
-          return (
-            <DayBlock
-              key={day.dateStr}
-              dayName={day.dayName}
-              dateStr={day.dateStr}
-              formattedDate={day.formattedDate}
-              isToday={day.isToday}
-              tasks={dayTasks}
-              onToggleTask={handleToggleTask}
-              onDeleteTask={handleDeleteTask}
-              onClarifyTask={handleClarifyTask}
-              onFollowUpTask={handleFollowUpTask}
-              onRescheduleTask={handleRescheduleTask}
-              onAddTask={handleAddTask}
-              onOpenBrainDump={() => setIsBrainDumpOpen(true)}
-            />
-          );
-        })}
-      </section>
+          {/* 7-Day Accordion Container */}
+          <section className="space-y-3">
+            {weekDays.map((day) => {
+              const dayTasks = tasks.filter((t) => t.assigned_date === day.dateStr);
+              return (
+                <DayBlock
+                  key={day.dateStr}
+                  dayName={day.dayName}
+                  dateStr={day.dateStr}
+                  formattedDate={day.formattedDate}
+                  isToday={day.isToday}
+                  tasks={dayTasks}
+                  onToggleTask={handleToggleTask}
+                  onDeleteTask={handleDeleteTask}
+                  onClarifyTask={handleClarifyTask}
+                  onFollowUpTask={handleFollowUpTask}
+                  onRescheduleTask={handleRescheduleTask}
+                  onAddTask={handleAddTask}
+                  onOpenBrainDump={() => setIsBrainDumpOpen(true)}
+                />
+              );
+            })}
+          </section>
+        </>
+      ) : (
+        <CalendarView
+          tasks={tasks}
+          onNavigateToTodo={() => setActiveTab('todo')}
+        />
+      )}
 
       {/* Brain Dump Modal Dialog */}
       <BrainDumpModal

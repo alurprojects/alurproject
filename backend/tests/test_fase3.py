@@ -119,3 +119,136 @@ def test_get_insights_endpoint():
     res = client.get("/insights?surfaced=true")
     assert res.status_code == 200
     assert isinstance(res.json(), list)
+
+
+def test_internal_cron_unauthorized():
+    """Verify POST /internal/cron/{job_name} rejects requests without or with invalid X-Cron-Secret."""
+    # 1. Missing header
+    res_no_secret = client.post("/internal/cron/nightly-status-check")
+    assert res_no_secret.status_code == 401
+    assert "Invalid or missing X-Cron-Secret" in res_no_secret.json()["detail"]
+
+    # 2. Wrong secret
+    res_wrong_secret = client.post(
+        "/internal/cron/nightly-status-check",
+        headers={"X-Cron-Secret": "totally-wrong-secret"},
+    )
+    assert res_wrong_secret.status_code == 401
+    assert "Invalid or missing X-Cron-Secret" in res_wrong_secret.json()["detail"]
+
+
+def test_internal_cron_authorized_jobs():
+    """Verify POST /internal/cron/{job_name} executes all valid jobs when X-Cron-Secret is valid."""
+    from app.core.config import settings
+
+    headers = {"X-Cron-Secret": settings.CRON_SECRET}
+
+    # 1. Nightly status check
+    r1 = client.post("/internal/cron/nightly-status-check", headers=headers)
+    assert r1.status_code == 200
+    assert r1.json()["status"] == "success"
+
+    # 2. Weekly recurrence generator (and alias 'recurrence')
+    r2 = client.post("/internal/cron/weekly-recurrence", headers=headers)
+    assert r2.status_code == 200
+    assert r2.json()["status"] == "success"
+
+    # 3. Weekly reflection with batching params (?only_active=true&batch_size=5)
+    r3 = client.post("/internal/cron/weekly-reflection?only_active=true&batch_size=5", headers=headers)
+    assert r3.status_code == 200
+    assert r3.json()["status"] == "success"
+    assert "continue" in r3.json()
+    assert "completed" in r3.json()
+
+    # 4. Retention: conversation-log-notify-pending
+    r4 = client.post("/internal/cron/conversation-log-notify-pending", headers=headers)
+    assert r4.status_code == 200
+    assert r4.json()["status"] == "success"
+    assert "notified_count" in r4.json()
+
+    # 5. Retention: conversation-log-hard-delete
+    r5 = client.post("/internal/cron/conversation-log-hard-delete", headers=headers)
+    assert r5.status_code == 200
+    assert r5.json()["status"] == "success"
+    assert "deleted_count" in r5.json()
+
+    # 6. 'all' aggregator job
+    r6 = client.post("/internal/cron/all", headers=headers)
+    assert r6.status_code == 200
+    assert r6.json()["status"] == "success"
+    assert "results" in r6.json()
+
+
+def test_internal_cron_unknown_job():
+    """Verify unknown job names return 400 Bad Request."""
+    from app.core.config import settings
+
+    headers = {"X-Cron-Secret": settings.CRON_SECRET}
+    res = client.post("/internal/cron/some-unknown-job", headers=headers)
+    assert res.status_code == 400
+    assert "Unknown job_name" in res.json()["detail"]
+
+
+def test_enhanced_reflection_agent_combined_data():
+    """Verify Reflection Agent processes combined data (tasks + conversation logs)."""
+    from app.agents.reflection import generate_reflection_insight
+
+    insight = generate_reflection_insight(
+        goal_title="Belajar Flutter & LangGraph",
+        missed_count=3,
+        missed_examples=["Membaca dokumentasi LangGraph", "Implementasi Follow-up Chip"],
+        recent_chat_reflections=["Aku merasa kewalahan dengan deadline kantor minggu ini", "Capek banget"],
+        completion_rate=0.33,
+    )
+    assert isinstance(insight, str)
+    assert len(insight) > 0
+    assert len(insight) <= 280
+
+
+def test_adaptive_personality_tone_switching():
+    """Verify Companion Agent adaptively switches between HONEST and GENTLE persona."""
+    from app.agents.companion import companion_agent
+    from app.agents.state import AlurChatState
+
+    # Scenario A: User is struggling (low completion rate 25%, 4 misses, struggling insights)
+    struggling_state: AlurChatState = {
+        "raw_message": "Aku belum sempat nyentuh tugas hari ini",
+        "user_id": "00000000-0000-0000-0000-000000000001",
+        "today_date": "2026-09-19",
+        "daily_capacity_hours": 8.0,
+        "daily_capacity_minutes": 480,
+        "existing_load_minutes_by_date": {},
+        "recent_completion_rate": 0.25,
+        "consecutive_misses": 4,
+        "recent_insights": ["Ada 3 task terlewat pada target Belajar"],
+        "conversation_context": [],
+        "message_type": "CHAT",
+        "tone_used": "HONEST",
+        "draft_tasks": [],
+        "scheduled_tasks": [],
+        "ai_response": "",
+    }
+    result_struggling = companion_agent(struggling_state)
+    assert result_struggling["tone_used"] == "GENTLE"
+
+    # Scenario B: User is on track (high completion rate 85%, 0 misses)
+    normal_state: AlurChatState = {
+        "raw_message": "Halo, selamat pagi",
+        "user_id": "00000000-0000-0000-0000-000000000001",
+        "today_date": "2026-09-19",
+        "daily_capacity_hours": 8.0,
+        "daily_capacity_minutes": 480,
+        "existing_load_minutes_by_date": {},
+        "recent_completion_rate": 0.85,
+        "consecutive_misses": 0,
+        "recent_insights": [],
+        "conversation_context": [],
+        "message_type": "CHAT",
+        "tone_used": "HONEST",
+        "draft_tasks": [],
+        "scheduled_tasks": [],
+        "ai_response": "",
+    }
+    result_normal = companion_agent(normal_state)
+    assert result_normal["tone_used"] == "HONEST"
+

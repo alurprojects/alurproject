@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 from app.agents.state import AlurState, DraftTask
-from app.core.llm import get_fallback_llm, get_primary_llm
+from app.core.llm import get_realtime_llm, get_batch_llm
 
 logger = logging.getLogger(__name__)
 
@@ -45,19 +45,19 @@ PROMPT = ChatPromptTemplate.from_messages([
 ])
 
 
-def extractor_agent(state: AlurState) -> AlurState:
-    """Extractor node: Parses raw brain-dump text into draft tasks."""
-    raw_text = state.get("raw_text", "").strip()
+def extractor_agent(state: dict) -> dict:
+    """Extractor node: Parses raw text/message into draft tasks."""
+    raw_text = (state.get("raw_text") or state.get("raw_message") or "").strip()
     if not raw_text:
         return {"draft_tasks": []}
 
     drafts: List[DraftTask] = []
 
-    # Attempt primary LLM (Gemini)
-    primary_llm = get_primary_llm()
-    if primary_llm:
+    # Attempt primary realtime LLM (Groq / Gemini)
+    realtime_llm = get_realtime_llm()
+    if realtime_llm:
         try:
-            runnable = PROMPT | primary_llm.with_structured_output(ExtractedTaskList)
+            runnable = PROMPT | realtime_llm.with_structured_output(ExtractedTaskList)
             result = runnable.invoke({"raw_text": raw_text})
             if result and hasattr(result, "tasks") and result.tasks:
                 drafts = [
@@ -72,13 +72,13 @@ def extractor_agent(state: AlurState) -> AlurState:
                 ]
                 return {"draft_tasks": drafts}
         except Exception as e:
-            logger.warning(f"Primary LLM extractor failed: {e}. Trying fallback...")
+            logger.warning(f"Realtime LLM extractor failed: {e}. Trying secondary LLM...")
 
-    # Attempt fallback LLM (Groq)
-    fallback_llm = get_fallback_llm()
-    if fallback_llm:
+    # Attempt secondary LLM
+    batch_llm = get_batch_llm()
+    if batch_llm and batch_llm != realtime_llm:
         try:
-            runnable = PROMPT | fallback_llm.with_structured_output(ExtractedTaskList)
+            runnable = PROMPT | batch_llm.with_structured_output(ExtractedTaskList)
             result = runnable.invoke({"raw_text": raw_text})
             if result and hasattr(result, "tasks") and result.tasks:
                 drafts = [

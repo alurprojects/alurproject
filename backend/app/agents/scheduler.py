@@ -45,7 +45,7 @@ def _resolve_target_date(preferred_day: Optional[str], today: date) -> date:
     return today
 
 
-def scheduler_agent(state: AlurState) -> AlurState:
+def scheduler_agent(state: dict) -> dict:
     """Scheduler node: Assigns calendar date to each task based on preferences and daily capacity."""
     draft_tasks = state.get("draft_tasks", [])
     today_str = state.get("today_date") or date.today().isoformat()
@@ -53,6 +53,7 @@ def scheduler_agent(state: AlurState) -> AlurState:
 
     daily_capacity_minutes = state.get("daily_capacity_minutes", 480)
     existing_loads: Dict[str, int] = dict(state.get("existing_load_minutes_by_date", {}))
+    source = state.get("source", "BRAIN_DUMP")
 
     scheduled: List[ScheduledTask] = []
 
@@ -90,7 +91,7 @@ def scheduler_agent(state: AlurState) -> AlurState:
                 is_ambiguous=draft.get("is_ambiguous", duration is None),
                 recurrence_rule=recurrence_rule,
                 recurrence_group_id=recurrence_group_id,
-                source="BRAIN_DUMP",
+                source=source,
                 ai_generated=True,
                 status="PENDING",
                 missed_follow_up="NONE",

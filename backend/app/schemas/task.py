@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 TaskStatus = Literal["PENDING", "DONE", "MISSED"]
-TaskSource = Literal["MANUAL", "BRAIN_DUMP"]
+TaskSource = Literal["MANUAL", "BRAIN_DUMP", "CHAT_ROOM"]
 MissedFollowUp = Literal["NONE", "PENDING", "FORGOT", "SKIPPED", "RESCHEDULED"]
 SuggestionStatus = Literal["PENDING", "ACCEPTED", "REJECTED"]
 

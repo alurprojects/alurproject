@@ -38,6 +38,38 @@ def get_fallback_llm() -> Optional[BaseChatModel]:
     return None
 
 
+def get_groq_llm() -> Optional[BaseChatModel]:
+    """Returns Groq chat model (fastest inference for real-time chat)."""
+    if settings.GROQ_API_KEY:
+        try:
+            from langchain_groq import ChatGroq
+
+            return ChatGroq(
+                model="llama-3.3-70b-versatile",
+                groq_api_key=settings.GROQ_API_KEY,
+                temperature=0.2,
+            )
+        except Exception as e:
+            logger.warning(f"Failed to initialize Groq LLM: {e}")
+    return None
+
+
+def get_realtime_llm() -> Optional[BaseChatModel]:
+    """Returns fastest LLM for real-time chat (Groq primary, Gemini fallback)."""
+    groq = get_groq_llm()
+    if groq:
+        return groq
+    return get_primary_llm()
+
+
+def get_batch_llm() -> Optional[BaseChatModel]:
+    """Returns LLM for background batch / reflection (Gemini primary, Groq fallback)."""
+    gemini = get_primary_llm()
+    if gemini:
+        return gemini
+    return get_groq_llm()
+
+
 def get_llm() -> BaseChatModel:
     """Returns primary LLM (Gemini) or fallback LLM (Groq).
 

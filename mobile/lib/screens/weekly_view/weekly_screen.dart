@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/task.dart';
@@ -7,16 +8,20 @@ import '../../widgets/day_block.dart';
 import '../../widgets/day_strip.dart';
 import '../../widgets/pill_button.dart';
 
+enum TodoViewMode { dailyFocus, weeklyOverview }
+
 class WeeklyScreen extends StatefulWidget {
   final ApiService apiService;
   final VoidCallback onToggleTheme;
   final bool isDarkMode;
+  final Function(String? prompt)? onOpenChat;
 
   const WeeklyScreen({
     super.key,
     required this.apiService,
     required this.onToggleTheme,
     required this.isDarkMode,
+    this.onOpenChat,
   });
 
   @override
@@ -30,13 +35,23 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   int _expandedDayIndex = -1;
+  int _selectedDayIndex = 0;
+  TodoViewMode _viewMode = TodoViewMode.dailyFocus;
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     final now = DateTime.now();
     _currentMonday = now.subtract(Duration(days: now.weekday - 1));
     _loadWeek();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadWeek() async {
@@ -62,6 +77,13 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
         _insights = insights;
         _isLoading = false;
         _expandedDayIndex = todayIdx;
+        _selectedDayIndex = todayIdx;
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(todayIdx);
+        }
       });
     } catch (e) {
       setState(() {
@@ -93,15 +115,32 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
     _loadWeek();
   }
 
-  Future<void> _toggleTaskStatus(Task task, bool isDone) async {
+  void _selectDay(int index) {
+    setState(() {
+      _selectedDayIndex = index;
+      _expandedDayIndex = index;
+    });
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  Future<void> _toggleTaskStatus(Task task, bool isDone, [int? dayIndexOverride]) async {
     if (_weekData == null) return;
+    final dayIndex = dayIndexOverride ??
+        (_viewMode == TodoViewMode.dailyFocus ? _selectedDayIndex : _expandedDayIndex);
+    if (dayIndex < 0 || dayIndex >= _weekData!.days.length) return;
 
     // Optimistic UI update
     final updatedTask = task.copyWith(status: isDone ? 'DONE' : 'PENDING');
     setState(() {
-      final day = _weekData!.days[_expandedDayIndex];
+      final day = _weekData!.days[dayIndex];
       final newTasks = day.tasks.map((t) => t.id == task.id ? updatedTask : t).toList();
-      _weekData!.days[_expandedDayIndex] = day.copyWith(tasks: newTasks);
+      _weekData!.days[dayIndex] = day.copyWith(tasks: newTasks);
     });
 
     try {
@@ -109,9 +148,9 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
     } catch (e) {
       // Revert on failure
       setState(() {
-        final day = _weekData!.days[_expandedDayIndex];
+        final day = _weekData!.days[dayIndex];
         final revertedTasks = day.tasks.map((t) => t.id == task.id ? task : t).toList();
-        _weekData!.days[_expandedDayIndex] = day.copyWith(tasks: revertedTasks);
+        _weekData!.days[dayIndex] = day.copyWith(tasks: revertedTasks);
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -121,7 +160,11 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
     }
   }
 
-  Future<void> _handleAddTask(String dayDate, String title) async {
+  Future<void> _handleAddTask(String dayDate, String title, [int? dayIndexOverride]) async {
+    final dayIndex = dayIndexOverride ??
+        (_viewMode == TodoViewMode.dailyFocus ? _selectedDayIndex : _expandedDayIndex);
+    if (_weekData == null || dayIndex < 0 || dayIndex >= _weekData!.days.length) return;
+
     try {
       final newTask = await widget.apiService.createTask(
         title: title,
@@ -129,8 +172,8 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
       );
 
       setState(() {
-        final day = _weekData!.days[_expandedDayIndex];
-        _weekData!.days[_expandedDayIndex] = day.copyWith(
+        final day = _weekData!.days[dayIndex];
+        _weekData!.days[dayIndex] = day.copyWith(
           tasks: [...day.tasks, newTask],
         );
       });
@@ -143,8 +186,11 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
     }
   }
 
-  Future<void> _handleClarifyTask(Task task, int minutes) async {
+  Future<void> _handleClarifyTask(Task task, int minutes, [int? dayIndexOverride]) async {
     if (_weekData == null) return;
+    final dayIndex = dayIndexOverride ??
+        (_viewMode == TodoViewMode.dailyFocus ? _selectedDayIndex : _expandedDayIndex);
+    if (dayIndex < 0 || dayIndex >= _weekData!.days.length) return;
 
     // Optimistic UI update
     final updatedTask = task.copyWith(
@@ -152,9 +198,9 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
       isAmbiguous: false,
     );
     setState(() {
-      final day = _weekData!.days[_expandedDayIndex];
+      final day = _weekData!.days[dayIndex];
       final newTasks = day.tasks.map((t) => t.id == task.id ? updatedTask : t).toList();
-      _weekData!.days[_expandedDayIndex] = day.copyWith(tasks: newTasks);
+      _weekData!.days[dayIndex] = day.copyWith(tasks: newTasks);
     });
 
     try {
@@ -243,7 +289,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                     children: [
                       Text(
                         'BRAIN-DUMP',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.0,
@@ -319,6 +365,28 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                       }
                     },
                   ),
+                  if (widget.onOpenChat != null) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: primaryTextColor,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                        icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                        label: const Text(
+                          'Buka & Bahas di Chat Room ➔',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        onPressed: () {
+                          final text = textController.text.trim();
+                          Navigator.of(context).pop();
+                          widget.onOpenChat?.call(text.isNotEmpty ? text : null);
+                        },
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -346,7 +414,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
         toolbarHeight: 42,
         title: Text(
           'ALUR',
-          style: TextStyle(
+          style: GoogleFonts.inter(
             letterSpacing: 2.0,
             fontSize: 15,
             fontWeight: FontWeight.w900,
@@ -354,6 +422,26 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
           ),
         ),
         actions: [
+          // View Mode Toggle (Daily Focus <-> Weekly Overview)
+          IconButton(
+            tooltip: _viewMode == TodoViewMode.dailyFocus
+                ? 'Beralih ke Weekly Overview'
+                : 'Beralih ke Daily Focus',
+            icon: Icon(
+              _viewMode == TodoViewMode.dailyFocus
+                  ? Icons.calendar_view_week_rounded
+                  : Icons.calendar_view_day_rounded,
+              size: 20,
+              color: primaryTextColor,
+            ),
+            onPressed: () {
+              setState(() {
+                _viewMode = _viewMode == TodoViewMode.dailyFocus
+                    ? TodoViewMode.weeklyOverview
+                    : TodoViewMode.dailyFocus;
+              });
+            },
+          ),
           // Today jump button
           TextButton(
             onPressed: _goToToday,
@@ -483,50 +571,139 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                       ),
                     ),
 
-                    // 7-day Accordion List
-                    Expanded(
-                      child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        itemCount: _weekData?.days.length ?? 0,
-                        itemBuilder: (context, index) {
-                          final day = _weekData!.days[index];
-                          final isExpanded = index == _expandedDayIndex;
+                    // Mode: Daily Focus View vs Weekly Overview Accordion
+                    if (_viewMode == TodoViewMode.dailyFocus) ...[
+                      // Day Pills Selector (M, T, W, T, F, S, S)
+                      Container(
+                        height: 48,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: Row(
+                          children: List.generate(_weekData?.days.length ?? 0, (index) {
+                            final day = _weekData!.days[index];
+                            final isSelected = index == _selectedDayIndex;
+                            final parsedDate = DateTime.tryParse(day.date);
+                            final dateNum = parsedDate != null ? parsedDate.day.toString() : '${index + 1}';
+                            final initial = day.dayName.isNotEmpty ? day.dayName[0].toUpperCase() : '';
 
-                          // Direct day position shade index (0 = Monday, ..., 6 = Sunday)
-                          // Creates an impeccably smooth stepped gradient cascading down the notebook
-                          final shadeIndex = index;
-
-                          return AnimatedCrossFade(
-                            duration: const Duration(milliseconds: 220),
-                            firstCurve: Curves.easeInOut,
-                            secondCurve: Curves.easeInOut,
-                            crossFadeState: isExpanded
-                                ? CrossFadeState.showFirst
-                                : CrossFadeState.showSecond,
-                            firstChild: DayBlock(
-                              dayData: day,
-                              shadeIndex: shadeIndex,
-                              onToggleTask: _toggleTaskStatus,
-                              onAddTask: (title) => _handleAddTask(day.date, title),
-                              onClarifyTask: _handleClarifyTask,
-                              onFollowUpAction: _handleFollowUp,
-                              onRescheduleAction: _handleReschedule,
-                              onOpenBrainDump: _openBrainDumpSheet,
-                            ),
-                            secondChild: DayStrip(
-                              dayName: day.dayName,
-                              taskCount: day.tasks.length,
-                              shadeIndex: shadeIndex,
-                              onTap: () {
-                                setState(() {
-                                  _expandedDayIndex = index;
-                                });
-                              },
-                            ),
-                          );
-                        },
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () => _selectDay(index),
+                                behavior: HitTestBehavior.opaque,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? (isDark ? AppColors.darkActiveAccent : AppColors.inkBlack)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        initial,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: isSelected
+                                              ? (isDark ? Colors.black : Colors.white)
+                                              : secondaryTextColor,
+                                        ),
+                                      ),
+                                      Text(
+                                        dateNum,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                          color: isSelected
+                                              ? (isDark ? Colors.black : Colors.white)
+                                              : primaryTextColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
                       ),
-                    ),
+
+                      // Swipeable PageView for Daily Focus
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: _weekData?.days.length ?? 0,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _selectedDayIndex = index;
+                              _expandedDayIndex = index;
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            final day = _weekData!.days[index];
+                            final shadeIndex = index.clamp(0, AppColors.lightDayShades.length - 1);
+
+                            return SingleChildScrollView(
+                              key: ValueKey('DailyFocus_${day.date}'),
+                              child: DayBlock(
+                                dayData: day,
+                                shadeIndex: shadeIndex,
+                                onToggleTask: (task, isDone) => _toggleTaskStatus(task, isDone, index),
+                                onAddTask: (title) => _handleAddTask(day.date, title, index),
+                                onClarifyTask: (task, mins) => _handleClarifyTask(task, mins, index),
+                                onFollowUpAction: _handleFollowUp,
+                                onRescheduleAction: _handleReschedule,
+                                onOpenBrainDump: _openBrainDumpSheet,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ] else ...[
+                      // 7-day Accordion List (Weekly Overview)
+                      Expanded(
+                        child: ListView.builder(
+                          padding: EdgeInsets.zero,
+                          itemCount: _weekData?.days.length ?? 0,
+                          itemBuilder: (context, index) {
+                            final day = _weekData!.days[index];
+                            final isExpanded = index == _expandedDayIndex;
+                            final shadeIndex = index;
+
+                            return AnimatedCrossFade(
+                              duration: const Duration(milliseconds: 220),
+                              firstCurve: Curves.easeInOut,
+                              secondCurve: Curves.easeInOut,
+                              crossFadeState: isExpanded
+                                  ? CrossFadeState.showFirst
+                                  : CrossFadeState.showSecond,
+                              firstChild: DayBlock(
+                                dayData: day,
+                                shadeIndex: shadeIndex,
+                                onToggleTask: (task, isDone) => _toggleTaskStatus(task, isDone, index),
+                                onAddTask: (title) => _handleAddTask(day.date, title, index),
+                                onClarifyTask: (task, mins) => _handleClarifyTask(task, mins, index),
+                                onFollowUpAction: _handleFollowUp,
+                                onRescheduleAction: _handleReschedule,
+                                onOpenBrainDump: _openBrainDumpSheet,
+                              ),
+                              secondChild: DayStrip(
+                                dayName: day.dayName,
+                                taskCount: day.tasks.length,
+                                shadeIndex: shadeIndex,
+                                onTap: () {
+                                  setState(() {
+                                    _expandedDayIndex = index;
+                                    _selectedDayIndex = index;
+                                  });
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ],
                 ),
     );

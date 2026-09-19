@@ -6,7 +6,7 @@ Dokumen ini mendefinisikan alur, antarmuka, dan spesifikasi otentikasi pada proy
 
 ## 1. Metode Otentikasi
 Otentikasi ALUR **hanya mendukung satu metode** yang di-handle oleh **Supabase Auth**:
-1. **Google OAuth**: Single Sign-On (SSO) satu tap menggunakan akun Google via `supabase.auth.signInWithOAuth(provider: OAuthProvider.google)`.
+1. **Google OAuth (Native & Web)**: Single Sign-On (SSO) satu tap menggunakan akun Google via `GoogleSignIn` (di Android/iOS) dilanjutkan dengan `supabase.auth.signInWithIdToken()`. Untuk platform Web tetap menggunakan `supabase.auth.signInWithOAuth()`.
 
 *Catatan: Pendaftaran via Email & Password tidak diaktifkan untuk meminimalisir hambatan (friction) saat pendaftaran awal dan menyederhanakan arsitektur MVP.*
 
@@ -16,8 +16,10 @@ Otentikasi ALUR **hanya mendukung satu metode** yang di-handle oleh **Supabase A
 
 ### Alur Masuk / Daftar (Single Flow)
 1. User menekan tombol "Continue with Google" di aplikasi Flutter.
-2. Flutter memanggil SDK Supabase: `supabase.auth.signInWithOAuth(provider: OAuthProvider.google)`
-3. Supabase Auth membuat atau memverifikasi data kredensial di skema internal `auth.users`.
+2. Flutter memanggil Native Google Sign-in dialog (`GoogleSignIn().signIn()`).
+3. Google merespons dengan `idToken` dan `accessToken`.
+4. Flutter mengirimkan token tersebut ke Supabase: `supabase.auth.signInWithIdToken(provider: OAuthProvider.google, idToken: ..., accessToken: ...)`
+5. Supabase Auth membuat atau memverifikasi data kredensial di skema internal `auth.users`.
 4. **Trigger Database:** Secara otomatis, trigger `on_auth_user_created` (didefinisikan di `DATABASE.md`) berjalan di PostgreSQL dan membuat baris profil di `public.users` jika belum ada.
 5. Flutter menerima **JWT Session** dan menyimpannya secara lokal (via `shared_preferences` / Supabase Auth persistence default).
 6. Setiap request API ke Backend (FastAPI) akan menyertakan header: `Authorization: Bearer <token>`.
@@ -73,3 +75,24 @@ Mengikuti panduan `DESIGN.md`:
 3. **Teks Pendukung**:
    - Judul: Charcoal (`#1A1A1A`), font weight 700, ukuran besar.
    - Deskripsi & Terms: Warm Gray (`#7A7772`), font weight 400.
+
+---
+
+## 5. Spesifikasi Animasi & Transisi (Login & Logout Motion UX)
+
+Untuk menjaga pengalaman pengguna tetap tenang (*calm, tactile, and unobtrusive*) sesuai filosofi ALUR:
+
+### A. Transisi Masuk (Login Transition: AuthScreen → MainScreen)
+- **Mekanisme**: Diatur oleh `AnimatedSwitcher` pada `AuthGate` yang merespons perubahan stream `onAuthStateChange` (`SIGNED_IN` / session aktif).
+- **Efek Visual**: Kombinasi *Cross-Fade* (Opacity 0.0 → 1.0) dengan *Subtle Elevation Lift* (Scale 0.98 → 1.00) untuk memberikan transisi mulus dan elegan saat masuk ke kanvas utama.
+- **Durasi**: **350ms**.
+- **Kurva (*Easing*)**: `Curves.easeInOutCubic` (akselerasi halus di awal, deselerasi tenang di akhir).
+- **State Feedback**: Selama komunikasi dengan Google OAuth dan Supabase berlangsung, tombol `GoogleSignInButton` menampilkan *loading indicator* dan berstatus nonaktif guna mencegah *multiple taps*.
+
+### B. Transisi Keluar (Logout Transition: MainScreen → AuthScreen)
+- **Mekanisme**: Dipicu ketika pengguna menekan tombol "Log Out" (di Tab Profile) yang memanggil `authService.signOut()`.
+- **Efek Visual**: *Pure Clean Fade* (Opacity 1.0 → 0.0 → 1.0) menuju `AuthScreen`.
+- **Durasi**: **250ms**.
+- **Kurva (*Easing*)**: `Curves.easeOutCubic`.
+- **Pembersihan State**: Seluruh status aktif di `MainScreen` direset kembali ke Tab 0 (To-do), session token dibersihkan, dan layar kembali ke landing `AuthScreen` tanpa *screen flicker* atau *blank page*.
+

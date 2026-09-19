@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config/env.dart';
@@ -7,6 +8,12 @@ import 'screens/auth/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("Gagal memuat file .env: $e");
+  }
 
   // Initialize Supabase if env variables are available
   if (AppEnv.supabaseUrl.isNotEmpty && AppEnv.supabaseAnonKey.isNotEmpty) {
@@ -18,6 +25,11 @@ void main() async {
     } catch (e) {
       debugPrint('Failed to initialize Supabase: $e');
     }
+  } else {
+    debugPrint(
+      '⚠️ PERINGATAN: AppEnv.supabaseUrl atau AppEnv.supabaseAnonKey kosong!\n'
+      'Pastikan file .env ada di folder mobile dan isinya benar.',
+    );
   }
 
   final prefs = await SharedPreferences.getInstance();

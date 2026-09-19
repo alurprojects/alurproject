@@ -174,6 +174,143 @@ class ApiService {
       return [];
     }
   }
+
+  Future<ChatApiResponse> sendChatMessage(String message) async {
+    final uri = Uri.parse('$baseUrl/chat/message');
+    final body = jsonEncode({'message': message});
+
+    final response = await http
+        .post(uri, headers: _headers, body: body)
+        .timeout(const Duration(seconds: 12));
+
+    if (response.statusCode == 200) {
+      final jsonMap = jsonDecode(response.body) as Map<String, dynamic>;
+      return ChatApiResponse.fromJson(jsonMap);
+    } else {
+      throw Exception('Failed to send chat message: ${response.statusCode} ${response.body}');
+    }
+  }
+
+  Future<List<ChatHistoryEntry>> fetchChatHistory({String? date}) async {
+    final uri = Uri.parse('$baseUrl/chat/history').replace(
+      queryParameters: date != null ? {'date': date} : null,
+    );
+
+    final response = await http.get(uri, headers: _headers);
+
+    if (response.statusCode == 200) {
+      final list = jsonDecode(response.body) as List<dynamic>;
+      return list
+          .map((item) => ChatHistoryEntry.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } else {
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchPendingDeletionLogs() async {
+    final uri = Uri.parse('$baseUrl/chat/history/pending-deletion');
+    final response = await http.get(uri, headers: _headers);
+
+    if (response.statusCode == 200) {
+      final list = jsonDecode(response.body) as List<dynamic>;
+      return list.cast<Map<String, dynamic>>();
+    } else {
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>> exportChatHistory() async {
+    final uri = Uri.parse('$baseUrl/chat/history/export');
+    final response = await http.post(uri, headers: _headers);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to export chat history: ${response.statusCode}');
+    }
+  }
+
+  Future<bool> overrideChatRetention({List<String>? logIds}) async {
+    final uri = Uri.parse('$baseUrl/chat/history/retention-override');
+    final payload = <String, dynamic>{'retention_override': true};
+    if (logIds != null) {
+      payload['log_ids'] = logIds;
+    }
+    final body = jsonEncode(payload);
+
+    final response = await http.patch(uri, headers: _headers, body: body);
+    return response.statusCode == 200;
+  }
+
+  Future<bool> deleteChatHistory() async {
+    final uri = Uri.parse('$baseUrl/chat/history');
+    final response = await http.delete(uri, headers: _headers);
+    return response.statusCode == 200;
+  }
+}
+
+class ChatApiResponse {
+  final String reply;
+  final String messageType;
+  final String toneUsed;
+  final String? moodDetected;
+  final List<Task> extractedTasks;
+
+  const ChatApiResponse({
+    required this.reply,
+    required this.messageType,
+    required this.toneUsed,
+    this.moodDetected,
+    this.extractedTasks = const [],
+  });
+
+  factory ChatApiResponse.fromJson(Map<String, dynamic> json) {
+    final tasksJson = json['extracted_tasks'] as List<dynamic>? ?? [];
+    return ChatApiResponse(
+      reply: json['reply'] as String? ?? '',
+      messageType: json['message_type'] as String? ?? 'CHAT',
+      toneUsed: json['tone_used'] as String? ?? 'HONEST',
+      moodDetected: json['mood_detected'] as String?,
+      extractedTasks: tasksJson
+          .map((t) => Task.fromJson(t as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class ChatHistoryEntry {
+  final String id;
+  final String role;
+  final String content;
+  final String messageType;
+  final String? toneUsed;
+  final String? moodDetected;
+  final DateTime createdAt;
+
+  const ChatHistoryEntry({
+    required this.id,
+    required this.role,
+    required this.content,
+    required this.messageType,
+    this.toneUsed,
+    this.moodDetected,
+    required this.createdAt,
+  });
+
+  factory ChatHistoryEntry.fromJson(Map<String, dynamic> json) {
+    return ChatHistoryEntry(
+      id: json['id'] as String? ?? '',
+      role: (json['role'] as String? ?? 'user').toLowerCase(),
+      content: json['content'] as String? ?? '',
+      messageType: json['message_type'] as String? ?? 'CHAT',
+      toneUsed: json['tone_used'] as String?,
+      moodDetected: json['mood_detected'] as String?,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
+          : DateTime.now(),
+    );
+  }
 }
 
 

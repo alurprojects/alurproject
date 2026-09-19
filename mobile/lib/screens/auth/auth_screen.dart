@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/three_dots_loading.dart';
 import 'widgets/auth_illustration.dart';
 import 'widgets/google_sign_in_button.dart';
 
@@ -52,67 +54,65 @@ class _AuthScreenState extends State<AuthScreen> {
           builder: (context, constraints) {
             return SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0,
+                      vertical: 32.0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Spacer(flex: 3),
-                        
+
                         // Illustration with Glow
-                        const Center(
-                          child: AuthIllustration(height: 480),
-                        ),
-                        
+                        const Center(child: AuthIllustration(height: 480)),
+
                         const SizedBox(height: 28),
-                        
+
                         // Welcome Text
-                        const Text(
-                          'Welcome to ALUR',
-                          style: TextStyle(
+                        Text(
+                          'BE KIND TO YOUR TIME.',
+                          style: GoogleFonts.inter(
                             color: AppColors.charcoal,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.5,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.6,
+                            height: 1.2,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Your realistic daily planner.',
+                          'A realistic planner that respects your limits.',
                           style: TextStyle(
                             color: AppColors.warmGray,
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w400,
+                            height: 1.4,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        
+
                         const SizedBox(height: 28),
-                        
+
                         // Google Sign In Button
                         if (_isLoading)
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12.0),
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.inkBlack),
-                              ),
-                            ),
+                          const ThreeDotsLoading(
+                            dotColor: AppColors.warmGray,
+                            dotSize: 8,
+                            spacing: 8,
+                            height: 50,
                           )
                         else
                           GoogleSignInButton(
                             onPressed: _handleGoogleSignIn,
                             text: 'Continue with Google',
                           ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Terms
                         const Text(
                           'By continuing, you agree to our Terms',
@@ -122,7 +122,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        
+
                         const Spacer(flex: 2),
                       ],
                     ),

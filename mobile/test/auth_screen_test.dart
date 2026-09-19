@@ -13,8 +13,8 @@ void main() {
       );
 
       // Verify title / text
-      expect(find.text('Welcome to ALUR'), findsOneWidget);
-      expect(find.text('Your realistic daily planner.'), findsOneWidget);
+      expect(find.text('BE KIND TO YOUR TIME.'), findsOneWidget);
+      expect(find.text('A realistic planner that respects your limits.'), findsOneWidget);
       expect(find.text('By continuing, you agree to our Terms'), findsOneWidget);
 
       // Verify buttons

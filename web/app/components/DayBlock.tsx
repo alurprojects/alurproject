@@ -69,7 +69,7 @@ export const DayBlock: React.FC<DayBlockProps> = ({
       >
         <div className="flex items-baseline gap-3">
           <h2
-            className={`text-2xl font-extrabold tracking-tight uppercase ${
+            className={`text-2xl font-black tracking-tight uppercase font-title ${
               isToday ? 'text-alur-ink' : 'text-alur-charcoal'
             }`}
           >

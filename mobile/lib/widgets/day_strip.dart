@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../core/constants/app_colors.dart';
 
 class DayStrip extends StatelessWidget {
@@ -46,7 +47,7 @@ class DayStrip extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     dayName.toUpperCase(),
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 48,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -1.5,

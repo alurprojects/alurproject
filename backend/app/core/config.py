@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     BACKEND_HOST: str = "0.0.0.0"
     BACKEND_PORT: int = 8000
     BACKEND_ENV: str = "development"
+    CRON_SECRET: str = "alur-dev-cron-secret-2026"
+
+    # Chat & Companion Configuration
+    COMPANION_SYSTEM_PROMPT: str = ""
+    CHAT_CONTEXT_WINDOW_DAYS: int = 7
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE if ENV_FILE.exists() else None,

@@ -22,6 +22,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
+        title: ["Inter", "sans-serif"],
       },
     },
   },
