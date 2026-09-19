@@ -1,77 +1,71 @@
-# ALUR 🌬️
-> *A productivity companion that is actively honest about your capacity—not what you wish it to be.*
+<p align="center">
+  <h1 align="center">ALUR 🌬️</h1>
+  <p align="center"><i>A productivity companion that is actively honest about your capacity—not what you wish it to be.</i></p>
+</p>
 
-![Flutter](https://img.shields.io/badge/Flutter-Mobile-02569B?logo=flutter&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-Web-000000?logo=next.js&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi&logoColor=white)
-![LangGraph](https://img.shields.io/badge/LangGraph-AI_Orchestration-FF4F00?logo=langchain&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-DB_&_Auth-3ECF8E?logo=supabase&logoColor=white)
+ALUR is a backend-heavy, multi-agent AI productivity system. It replaces complex dashboards with a minimalist UI and a smart assistant that parses tasks, checks your capacity, and gently warns you against burnout.
 
-## 📖 Tentang ALUR
-ALUR bukan sekadar *to-do list* biasa. ALUR adalah sistem asisten produktivitas berbasis **Multi-Agent AI (LangGraph)** yang dirancang dengan filosofi *Backend-Heavy & Simple Frontend*. 
+**North Star Metric:** *DCDC (Daily Conscious Decision Count)*.
 
-Tampilannya sesederhana kertas coretan, namun di baliknya terdapat tim asisten otonom yang mempelajari pola kerjamu, menyaring *brain-dump* menjadi tugas terstruktur, dan bahkan secara empatik memberi peringatan ketika beban kerjamu tidak realistis.
+## How It Works
 
-**North Star Metric:** *DCDC (Daily Conscious Decision Count)* — Mendorong pengguna untuk membuat keputusan yang sadar tentang apa yang benar-benar bisa diselesaikan dalam sehari.
-
----
-
-## ✨ Fitur Utama
-
-### 1. 📝 Hybrid To-Do List
-Fokus pada hari ini (*Daily Focus*) tanpa distraksi, dengan opsi *toggle* untuk melihat gambaran utuh jadwal minggu ini (*Weekly Overview*). 
-
-### 2. 💬 The Chat Room (Brain-dump & Curhat)
-Satu ruang obrolan untuk menyelesaikan semuanya:
-* **Task Extraction:** Ketik kalimat acak seperti *"Besok siang aku harus email klien"*, AI akan otomatis memecahnya menjadi *To-do list* yang terstruktur dan menjadwalkannya.
-* **Capacity Check:** Tanya *"Masih bisa ngerjain apa hari ini?"*, AI akan menghitung beban kerjamu secara realistis dan menyarankan istirahat jika perlu.
-* **Venting & Reflection:** Tempat menuangkan keluh kesah. AI memiliki *Adaptive 2-Tone Personality* (**HONEST** & **GENTLE**) yang secara otomatis mengubah nada bicaranya menjadi lebih lembut saat mendeteksi indikasi kelelahan mental (*burnout*).
-
-### 3. 🧠 Nightly & Weekly Auto-Reflection
-Sistem *background task* (berjalan via `pg_cron`) yang secara otomatis merapikan jadwal di tengah malam, menandai tugas yang terlewat, dan menyiapkan rangkuman *AI Insights* mingguan (menilai apakah kamu sekadar "lupa" atau "sengaja menghindari" tugas tertentu).
-
----
-
-## 🏗️ Arsitektur & Teknologi
-
-ALUR memisahkan kerumitan logika dari antarmuka (*UI*) melalui pendekatan **Serverless Multi-Agent System**.
-
-| Komponen | Teknologi | Peran |
-| :--- | :--- | :--- |
-| **Mobile App** | `Flutter` | Klien utama layar utuh (To-do, Chat Room, Calendar, Profile). |
-| **Web App** | `Next.js` | Klien pendukung (Fokus khusus pada To-do & Calendar). |
-| **Backend API** | `FastAPI` (Python) | Endpoint pusat dan rumah bagi integrasi AI. |
-| **AI Orchestration** | `LangGraph` & `LangChain`| Mengatur alur otak kecerdasan buatan (*Companion*, *Extractor*, *Scheduler*, *Reflection*). |
-| **LLM Provider** | `Groq` & `Gemini 2.0` | Inferensi kecepatan tinggi (*real-time*) dan penalaran latar belakang (*batch cron*). |
-| **Database & Auth** | `Supabase` | PostgreSQL, Autentikasi OAuth Google, Row Level Security (RLS), dan otomasi Job Cron. |
-
----
-
-## 📂 Struktur Repositori
+Users interact purely through a simple To-do list and a Chat Room. The LangGraph-powered backend does the heavy lifting: capturing tasks from messy text, managing schedules, and reflecting on missed work.
 
 ```text
-alur-project/
-├── backend/       # Inti sistem: API FastAPI dan LangGraph AI Agents
-├── mobile/        # Antarmuka utama Flutter (iOS & Android)
-├── web/           # Dasbor minimalis berbasis Next.js
-└── _docs/         # [PENTING] Pusat Dokumentasi Proyek
+                    ┌──────────────────────────────────────┐
+                    │            User Input                │
+                    │   (Chat Room or To-Do Checkbox)      │
+                    └──────────────────┬───────────────────┘
+                                       │
+                    ┌──────────────────▼───────────────────┐
+                    │         Companion Agent              │
+                    │  (Evaluates intent & sets tone)      │
+                    └──────────────────┬───────────────────┘
+                                       │
+     ┌───────────────┬─────────────────┴─────────────────┬───────────────┐
+     ▼               ▼                                   ▼               ▼
+┌─────────┐    ┌─────────┐                         ┌──────────┐    ┌──────────┐
+│  Task   │    │ Capacity│                         │ Venting/ │    │  Cron /  │
+│ Extract │    │  Check  │                         │ Chatting │    │Reflection│
+├─────────┤    ├─────────┤                         ├──────────┤    ├──────────┤
+│Parses   │    │Reviews  │                         │Adaptive  │    │Nightly & │
+│brain-   │    │workload │                         │2-tone    │    │weekly    │
+│dump to  │    │and time │                         │reply     │    │insights  │
+└─────────┘    └─────────┘                         └──────────┘    └──────────┘
 ```
 
+## Core Features
+
+| Feature | Description |
+|---|---|
+| **Hybrid To-Do** | Focus purely on today, with an optional toggle to see the full week. |
+| **Chat Room** | Drop random brain-dumps or complain about your day. The AI listens. |
+| **Task Extraction** | Write *"Email the boss tomorrow"*, and AI automatically schedules a task. |
+| **Capacity Check** | Ask *"What else can I do today?"* to get a realistic assessment of your energy. |
+| **Adaptive Tone** | AI speaks honestly (HONEST) by default, but softens (GENTLE) if you show signs of burnout. |
+| **Auto-Reflection** | A background cron job safely flags missed tasks and generates weekly insights. |
+
+## Technology Stack
+
+- **Mobile:** Flutter (iOS & Android)
+- **Web:** Next.js (To-do & Calendar view only)
+- **Backend:** FastAPI (Python)
+- **AI Orchestration:** LangGraph & LangChain
+- **LLM:** Groq (Real-time) & Gemini 2.0 (Batching/Cron)
+- **Database & Auth:** Supabase (PostgreSQL, pg_cron)
+
+## Getting Started
+
+All active documentation is strictly located in the `_docs/running/` folder. 
+
+> ⚠️ **IMPORTANT:** Never read or use files from `_docs/archive/`. 
+
+To understand the system and start developing, read these in order:
+1. [`PRD.md`](./_docs/running/PRD.md) - Product requirements and UX rules.
+2. [`technical.md`](./_docs/running/technical.md) - API contracts and architecture.
+3. [`DATABASE.md`](./_docs/running/DATABASE.md) - Database schema and pg_cron jobs.
+4. [`mindmap.md`](./_docs/running/mindmap.md) - Visual system diagrams.
+5. [`ENV_GUIDE.md`](./_docs/running/ENV_GUIDE.md) - Local environment setup.
+
 ---
-
-## 📚 Dokumentasi Proyek (Single Source of Truth)
-
-Seluruh spesifikasi teknis, aturan desain, dan panduan lingkungan (*environment*) berada secara ketat di dalam direktori **`_docs/running/`**.
-
-> ⚠️ **PENTING UNTUK DEVELOPER / AI AGENT:** 
-> Jangan pernah merujuk ke folder `_docs/archive/`. Selalu gunakan dokumen aktif di dalam `_docs/running/` sebagai acuan tunggal pengerjaan proyek dan implementasi fitur.
-
-**Mulai Pelajari ALUR:**
-1. 🎯 [Product Requirements (PRD)](./_docs/running/PRD.md)
-2. ⚙️ [Spesifikasi Teknis (Technical)](./_docs/running/technical.md)
-3. 🗺️ [Peta Sistem & Flowchart (Mindmap)](./_docs/running/mindmap.md)
-4. 🗄️ [Skema Database](./_docs/running/DATABASE.md)
-5. 🔐 [Konfigurasi Environment & Deploy](./_docs/running/ENV_GUIDE.md)
-
----
-*Dibangun untuk membuatmu produktif, namun mengingatkanmu untuk tetap beristirahat.*
+*Built to make you productive, but remind you to rest.*
