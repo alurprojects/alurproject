@@ -88,6 +88,7 @@ flowchart TD
 Bagian ini menjabarkan bagaimana setiap fitur inti digunakan dari sudut pandang pengguna sehari-hari dengan bahasa yang mudah dipahami.
 
 ### A. Fitur To-Do (Eksekusi Harian & Mingguan)
+
 Fokus utama pengguna untuk mengeksekusi tugas tanpa disibukkan dengan terlalu banyak informasi visual.
 
 ```mermaid
@@ -107,6 +108,7 @@ flowchart LR
 ```
 
 ### B. Fitur Brain-dump (Ekstraksi Tugas Otomatis)
+
 Mengubah pikiran acak dan tumpukan ide mentah langsung menjadi daftar tugas terstruktur melalui percakapan biasa.
 
 ```mermaid
@@ -123,6 +125,7 @@ sequenceDiagram
 ```
 
 ### C. Fitur Curhat & Cek Kapasitas Beban Kerja
+
 Saat pengguna merasa kewalahan, Chat Room berubah menjadi asisten empati yang secara aktif mengecek sisa energi pengguna.
 
 ```mermaid
@@ -139,6 +142,7 @@ sequenceDiagram
 ```
 
 ### D. Fitur Evaluasi Otomatis (Review Malam & Mingguan)
+
 Sistem merapikan tugas-tugas secara diam-diam di latar belakang agar pengguna selalu mendapat rekomendasi yang jujur dan realistis.
 
 ```mermaid
@@ -154,5 +158,5 @@ flowchart TD
 ```
 
 ---
-**Catatan Penting:** 
+**Catatan Penting:**
 Dokumentasi ini merangkum spesifikasi ALUR agar mudah dipahami secara visual, dengan berpegang teguh pada pendekatan arsitektur "Backend-Heavy & Simple Frontend", di mana orkestrasi *state* dan kecerdasan sepenuhnya terpusat pada multi-agent LangGraph.
