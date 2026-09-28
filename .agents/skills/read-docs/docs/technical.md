@@ -243,18 +243,28 @@ Karena tiap invocation Vercel dibatasi ~10 detik, `weekly-reflection` TIDAK memp
 
 ---
 
-## 6. Companion Agent Architecture
+## 6. Companion Agent Architecture (Hermes-Style)
 
-Companion Agent adalah pintu gerbang (titik kontak pertama) interaksi AI dengan pengguna di Chat Room. 
+Companion Agent adalah pintu gerbang utama interaksi AI. Mengadaptasi arsitektur **Hermes Agent**, agen ini dirancang sangat hemat token namun memiliki pemahaman mendalam tentang user melalui **Hierarchical Memory** dan **Dynamic Persona Routing**.
 
-**Tanggung Jawab Utama:**
-1. **Input Processing:** Mengklasifikasikan intent pesan menjadi `TASK_CAPTURE`, `REFLECTION`, `CHAT`, atau `CAPACITY_QUERY`.
-2. **Context Awareness:** Agen memiliki memori konteks berdasarkan 20 pesan terakhir, status *tasks* minggu berjalan, dan *recent insights*.
-3. **2-Tone Personality System:**
-   - **Tone Selection:** 2 nada bicara — `HONEST` (default: lugas, data-driven) dan `GENTLE` (kondisional: dipakai HANYA saat mendeteksi sinyal burnout/overload nyata).
-   - **Faktor Pengaruh:** `completion_rate` 7 hari terakhir dan `consecutive_misses` sebagai faktor utama untuk menentukan kapan switch dari HONEST ke GENTLE.
-4. **Output:** `{ response_text, message_type, extracted_tasks[], overload_signal, tone_used }`
-5. **Memory Management:** Menyimpan dan menarik percakapan historis di tabel `conversation_logs`.
+**1. Hierarchical Memory (Memori 3 Lapis)**
+Untuk menghindari pengiriman riwayat obrolan raksasa ke LLM (yang boros token dan lambat), memori dibagi menjadi 3 tingkat:
+- **Level 1: Core Profile (~50 token)**: Ringkasan JSON super padat tentang kepribadian user (misal: gaya kerja, tingkat stres saat ini, kebiasaan) yang terus di-update oleh background cron (Memory Condenser). Selalu di-inject ke setiap prompt.
+- **Level 2: Working Memory (Short-Term)**: Hanya memuat 3–5 pesan terakhir dari `conversation_logs` untuk konteks obrolan yang sedang berlangsung.
+- **Level 3: Archival Memory (RAG / pgvector)**: Ditarik HANYA jika obrolan membutuhkan referensi historis spesifik (menggunakan `rag_service.retrieve_context`).
+
+**2. Dynamic Persona Switching (Gonta-Ganti Persona)**
+Alih-alih prompt raksasa berisi semua aturan, sistem memodulasi prompt secara dinamis. LangGraph Router mengevaluasi kondisi user dan hanya menyuntikkan **satu modul persona aktif**:
+- 🎯 **Realist / Honest Coach**: Lugas & data-driven (saat menunda-nunda).
+- 🍃 **Gentle Companion**: Hangat & suportif (saat terdeteksi sinyal stres/burnout).
+- 🧩 **Clarifier / Strategist**: Membantu memecah tugas kompleks (saat brain-dump ide rumit).
+- ⚡ **Minimalist Assistant**: Respons konfirmasi instan 1-baris (saat quick task capture).
+
+**3. Background Memory Condenser**
+Memori jangka panjang (Core Profile) diperbarui tanpa membebani interaksi real-time. Sebuah cron job harian memproses chat hari itu dan mengekstraksi insight kepribadian baru ke dalam JSON `ai_profile_summary` di tabel `users`.
+
+**4. Tanggung Jawab Output**
+Mengeluarkan JSON terstruktur: `{ response_text, message_type, extracted_tasks[], overload_signal, active_persona }`
 
 ---
 

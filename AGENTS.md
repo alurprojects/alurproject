@@ -16,4 +16,13 @@
 ## CRITICAL RULES:
 1. **NEVER** read from `.agents/skills/read-docs/archive/` or assume it has active rules. Files in `.agents/skills/read-docs/archive/` are obsolete historical archives.
 2. **DO NOT** create or look for specification files outside of `.agents/skills/read-docs/docs/`. Always use `.agents/skills/read-docs/docs/`.
-3. When tracking tasks and implementation plans, use `.agents/skills/read-docs/docs/implementation_plan.md`.
+3. **Implementation Plans (`/plan` command)**:
+   - **Directory**: Store all implementation plans in `.agents/skills/read-docs/docs/plans/`.
+   - **File Naming**: Use a concise format with date and short feature name: `YYYY-MM-DD_nama-fitur.md` (e.g., `2026-09-28_auth-ui.md`).
+   - **Single-File Versioning**: Use **ONLY ONE** file per feature. Do NOT generate new files for every revision or iteration.
+   - **Changelog System**: If a revision is made, update the main content directly and append the revision history to a `# Changelog` section at the bottom of the same document for readability.
+
+4. **Execution Plans (Breakdown)**:
+   - **Directory**: Store execution checklists in `.agents/skills/read-docs/docs/exec/`.
+   - **File Naming**: Use format `YYYY-MM-DD_exec-nama-fitur.md`.
+   - **Format**: Must use modular sections (phases) and actionable markdown checklists (`- [ ]`) for progress tracking.
