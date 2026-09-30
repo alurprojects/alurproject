@@ -182,21 +182,23 @@ def run_chat_message(message: str, user_id: UUID, supabase: Client) -> dict:
 
     # 1. Fetch user capacity & preferences
     daily_capacity_hours = 8.0
+    ai_profile_summary = {}
     try:
         user_res = (
             supabase.table("users")
-            .select("daily_capacity_hours, timezone")
+            .select("daily_capacity_hours, timezone, ai_profile_summary")
             .eq("id", str(user_id))
             .execute()
         )
         if user_res.data:
             daily_capacity_hours = float(user_res.data[0].get("daily_capacity_hours") or 8.0)
+            ai_profile_summary = user_res.data[0].get("ai_profile_summary") or {}
     except Exception as e:
         logger.warning(f"Failed to fetch user capacity: {e}")
 
     daily_capacity_minutes = int(daily_capacity_hours * 60)
 
-    # 2. Fetch conversation context (last 10 recent messages)
+    # 2. Fetch conversation context (last 10 recent messages) and RAG Archival Context
     conv_context = []
     try:
         logs_res = (
@@ -211,6 +213,17 @@ def run_chat_message(message: str, user_id: UUID, supabase: Client) -> dict:
             conv_context = list(reversed(logs_res.data))
     except Exception as e:
         logger.warning(f"Failed to fetch conversation context: {e}")
+
+    rag_context = ""
+    try:
+        from app.services.embedding_service import EmbeddingService
+        from app.services.rag_service import RAGService
+
+        rag_service = RAGService(EmbeddingService(supabase))
+        rag_context = rag_service.retrieve_context_sync(user_id=user_id, query=message, top_k=5)
+    except Exception as e:
+        logger.warning(f"Failed to fetch RAG context: {e}")
+
 
     # 3. Fetch task stats & existing load for this week
     load_by_date: dict[str, int] = {}
@@ -286,6 +299,9 @@ def run_chat_message(message: str, user_id: UUID, supabase: Client) -> dict:
         "conversation_context": conv_context,
         "message_type": "CHAT",
         "tone_used": "HONEST",
+        "active_persona": "HONEST",
+        "ai_profile_summary": ai_profile_summary,
+        "rag_context": rag_context,
         "draft_tasks": [],
         "scheduled_tasks": [],
         "ai_response": "",
@@ -323,9 +339,10 @@ def run_chat_message(message: str, user_id: UUID, supabase: Client) -> dict:
             logger.error(f"Failed to insert chat-extracted tasks: {e}")
 
     # 6. Persist to conversation_logs
+    inserted_logs = []
     try:
         task_ids = [st["id"] for st in scheduled_tasks]
-        supabase.table("conversation_logs").insert([
+        ins_logs_res = supabase.table("conversation_logs").insert([
             {
                 "user_id": str(user_id),
                 "role": "USER",
@@ -344,6 +361,8 @@ def run_chat_message(message: str, user_id: UUID, supabase: Client) -> dict:
                 "session_date": today.isoformat(),
             },
         ]).execute()
+        if ins_logs_res.data:
+            inserted_logs = ins_logs_res.data
     except Exception as e:
         logger.error(f"Failed to persist conversation logs: {e}")
 
@@ -351,6 +370,8 @@ def run_chat_message(message: str, user_id: UUID, supabase: Client) -> dict:
         "reply": result.get("ai_response", ""),
         "message_type": result.get("message_type", "CHAT"),
         "tone_used": result.get("tone_used", "HONEST"),
+        "active_persona": result.get("active_persona", "HONEST"),
         "mood_detected": result.get("mood_detected"),
         "extracted_tasks": extracted_task_records,
+        "conversation_logs": inserted_logs,
     }

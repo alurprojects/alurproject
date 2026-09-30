@@ -11,12 +11,14 @@
 
 | Tabel | Fase | Deskripsi |
 | :--- | :---: | :--- |
-| `users` | 1 | Profil, timezone, dan kapasitas harian user |
+| `users` | 1 | Profil, timezone, kapasitas harian, dan core profile summary user |
 | `goals` | 1 | Target / tujuan jangka menengah-panjang user (ditampilkan di tab Profile) |
 | `tasks` | 1 | Unit kerja utama; bisa manual, brain-dump, atau dari Chat Room |
-| `conversation_logs` | 2 | **BARU** — Seluruh interaksi Chat Room (user & AI), bahan evaluasi Reflection Agent |
+| `conversation_logs` | 2 | Seluruh interaksi Chat Room (user & AI), bahan evaluasi Reflection Agent |
 | `task_suggestions` | 3 | Saran reschedule dari Scheduler Agent |
 | `ai_insights` | 2-3 | Insight dari Reflection Agent + Companion Agent (capacity warning, pola, refleksi) |
+| `embeddings` | 3 | **BARU** — Vektor representasi (dimensi 768) untuk RAG semantic retrieval |
+| `morning_briefs` | 3 | **BARU** — Structured brief harian to-do & AI note untuk notifikasi pagi |
 | `google_calendar_connections` | **Tahap B** | Koneksi OAuth Google Calendar per user (read-only) |
 
 ---
@@ -31,11 +33,13 @@ users (1)
  │                                                │
  │                                                └──────── task_suggestions (N)
  │
- ├──────────────────────────────────────────── conversation_logs (N)  ← BARU
+ ├──────────────────────────────────────────── conversation_logs (N)
  │                                                │
  │                                                └──────── extracted_task_ids → tasks (nullable, array)
  │
  ├──────────────────────────────────────────── ai_insights (N)
+ ├──────────────────────────────────────────── embeddings (N)  ← BARU (RAG)
+ ├──────────────────────────────────────────── morning_briefs (N)  ← BARU
  └──────────────────────────────────────────── google_calendar_connections (N, Tahap B)
 ```
 
@@ -53,6 +57,7 @@ CREATE TABLE users (
     timezone    TEXT NOT NULL DEFAULT 'Asia/Jakarta',
     daily_capacity_hours  NUMERIC(3,1) NOT NULL DEFAULT 8.0,
     preferences JSONB NOT NULL DEFAULT '{}',
+    ai_profile_summary JSONB NOT NULL DEFAULT '{}',
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -450,6 +455,117 @@ CREATE POLICY "gcal_connections: all own" ON google_calendar_connections
 
 ---
 
+## 8.6 Tabel: `embeddings` (**BARU — Fase 3: RAG**)
+
+Menyimpan vector embeddings dari konten user (task, chat, insight) untuk similarity search berbasis `pgvector`.
+
+```sql
+CREATE TYPE embedding_source AS ENUM ('TASK', 'CONVERSATION', 'INSIGHT');
+
+CREATE TABLE embeddings (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    source_type     embedding_source NOT NULL,
+    source_id       UUID NOT NULL,           -- FK ke tasks.id / conversation_logs.id / ai_insights.id
+    content_text    TEXT NOT NULL,            -- teks asli yang di-embed
+    embedding       vector(768) NOT NULL,    -- dimensi 768 (Gemini text-embedding-004)
+    metadata        JSONB DEFAULT '{}',      -- konteks tambahan (assigned_date, message_type, dll)
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index untuk similarity search (cosine distance)
+CREATE INDEX embeddings_user_vector_idx
+    ON embeddings USING ivfflat (embedding vector_cosine_ops)
+    WITH (lists = 100);
+
+CREATE INDEX embeddings_user_source_idx
+    ON embeddings (user_id, source_type);
+
+-- Prevent duplicate embeddings per source
+CREATE UNIQUE INDEX embeddings_source_uidx
+    ON embeddings (source_type, source_id);
+```
+
+### Row Level Security (RLS) & RPC Function
+
+```sql
+ALTER TABLE embeddings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "embeddings: all own" ON embeddings
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE OR REPLACE FUNCTION match_embeddings(
+    query_embedding vector(768),
+    match_user_id UUID,
+    match_count INT DEFAULT 10,
+    filter_source embedding_source DEFAULT NULL
+)
+RETURNS TABLE (
+    id UUID,
+    source_type embedding_source,
+    source_id UUID,
+    content_text TEXT,
+    metadata JSONB,
+    similarity FLOAT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        e.id,
+        e.source_type,
+        e.source_id,
+        e.content_text,
+        e.metadata,
+        1 - (e.embedding <=> query_embedding) AS similarity
+    FROM embeddings e
+    WHERE e.user_id = match_user_id
+      AND (filter_source IS NULL OR e.source_type = filter_source)
+    ORDER BY e.embedding <=> query_embedding
+    LIMIT match_count;
+END;
+$$;
+```
+
+---
+
+## 8.7 Tabel: `morning_briefs` (**BARU — Fase 3: Morning Brief**)
+
+Menyimpan structured brief harian yang dihasilkan oleh Morning Brief Service / Cron untuk disajikan di banner to-do pagi.
+
+```sql
+CREATE TABLE morning_briefs (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    brief_date        DATE NOT NULL,
+    content           JSONB NOT NULL,
+    notification_sent BOOLEAN NOT NULL DEFAULT FALSE,
+    opened_at         TIMESTAMPTZ,
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX morning_briefs_user_date_uidx
+    ON morning_briefs (user_id, brief_date);
+
+CREATE INDEX morning_briefs_unsent_idx
+    ON morning_briefs (notification_sent, brief_date)
+    WHERE notification_sent = FALSE;
+```
+
+### Row Level Security (RLS)
+
+```sql
+ALTER TABLE morning_briefs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "morning_briefs: all own" ON morning_briefs
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+```
+
+---
+
 ## 9. Format `recurrence_rule`
 
 | Nilai | Makna | Contoh Task |
@@ -576,10 +692,26 @@ SELECT cron.schedule(
           AND retention_override = FALSE;
     $$
 );
+
+-- 5. Morning Brief Generator — Setiap jam (mengecek user yang tiba pada reminder_hour lokal)
+SELECT cron.schedule(
+    'morning-brief-generator',
+    '0 * * * *',
+    $$
+        SELECT net.http_post(
+            url := current_setting('app.backend_url', true) || '/internal/cron/morning-brief',
+            headers := jsonb_build_object(
+                'Content-Type', 'application/json',
+                'X-Cron-Secret', current_setting('app.cron_secret', true)
+            )
+        );
+    $$
+);
 ```
 
 > [!NOTE]
 > `weekly-reflection` sekarang memproses **combined data**: tasks (status, missed_follow_up) + conversation_logs (refleksi, mood, kendala) untuk menghasilkan insight yang lebih kaya.
+> `morning-brief-generator` berjalan setiap jam untuk menghasilkan structured daily brief bagi pengguna yang waktu lokalnya mencapai jam reminder (default 07:00).
 
 ---
 
@@ -591,16 +723,18 @@ SELECT cron.schedule(
 003_create_users.sql                    -- Tabel users + auth trigger
 004_create_goals.sql                    -- Tabel goals + RLS
 005_create_tasks.sql                    -- Tabel tasks + RLS + index (source enum sudah termasuk CHAT_ROOM)
-006_create_conversation_logs.sql        -- BARU: Tabel conversation_logs + RLS (Fase 2, tapi buat awal)
-007_create_task_suggestions.sql         -- Tabel task_suggestions + RLS (Fase 3)
-008_create_ai_insights.sql              -- Tabel ai_insights + RLS (Fase 2-3, insight_type enum)
+006_create_conversation_logs.sql        -- Tabel conversation_logs + RLS
+007_create_task_suggestions.sql         -- Tabel task_suggestions + RLS
+008_create_ai_insights.sql              -- Tabel ai_insights + RLS (insight_type enum)
 009_create_gcal_connections.sql         -- Tahap B
 010_setup_rls_policies.sql              -- Verifikasi semua RLS aktif
-011_setup_pg_cron.sql                   -- Daftarkan cron jobs (setelah Fase 3)
+011_setup_pg_cron.sql                   -- Daftarkan cron jobs
+012_enable_pgvector.sql                 -- Aktifkan ekstensi pgvector
+013_create_embeddings.sql               -- Tabel embeddings + RLS + match_embeddings RPC
+014_create_morning_briefs.sql           -- Tabel morning_briefs + RLS
+015_setup_morning_brief_cron.sql        -- Schedule cron job morning-brief-generator + users_due_morning_brief RPC
+016_add_ai_profile_summary.sql          -- Tambahkan kolom ai_profile_summary di tabel users
 ```
-
-> [!WARNING]
-> **Strategi migrasi**: `conversation_logs` sebaiknya dibuat di Fase 1 bersamaan dengan tabel lain (meski belum dipakai sampai Fase 2) — karena tabel ini independen dan tidak berisiko.
 
 ---
 

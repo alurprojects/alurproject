@@ -1,3 +1,4 @@
+import logging
 from datetime import date, datetime, timezone
 from typing import List, Optional
 from uuid import UUID
@@ -5,8 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from supabase import Client
 
 from app.agents.graph import run_chat_message
-from app.api.deps import get_current_user_id
+from app.api.deps import get_current_user_id, get_embedding_service
 from app.core.supabase import get_supabase_client
+from app.services.embedding_service import EmbeddingService
 from app.schemas.chat import (
     ChatActionResponse,
     ChatExportResponse,
@@ -17,6 +19,8 @@ from app.schemas.chat import (
     RetentionOverrideRequest,
 )
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
@@ -25,10 +29,12 @@ def send_chat_message(
     request: ChatMessageRequest,
     user_id: UUID = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase_client),
+    embedding_service: EmbeddingService = Depends(get_embedding_service),
 ) -> ChatMessageResponse:
     """Send user message to Chat Room.
 
     Orchestrates Companion Agent, Extractor Agent, and Scheduler Agent via LangGraph.
+    Ingests conversation logs and extracted tasks into the vector embedding pipeline.
     Returns AI reply, tone used, and any extracted tasks.
     """
     result = run_chat_message(
@@ -36,6 +42,54 @@ def send_chat_message(
         user_id=user_id,
         supabase=supabase,
     )
+
+    # 3.1 Hook: Upsert embeddings for persisted conversation logs
+    inserted_logs = result.get("conversation_logs", [])
+    for log in inserted_logs:
+        try:
+            log_id = log.get("id")
+            content = log.get("content", "")
+            if log_id and content:
+                embedding_service.upsert_embedding_sync(
+                    user_id=user_id,
+                    source_type="CONVERSATION",
+                    source_id=UUID(str(log_id)),
+                    content_text=content,
+                    metadata={
+                        "date": str(log.get("session_date", date.today().isoformat())),
+                        "role": log.get("role"),
+                        "message_type": log.get("message_type"),
+                    },
+                )
+        except Exception as e:
+            logger.warning(f"Failed to upsert conversation embedding for {log.get('id')}: {e}")
+
+    # Upsert embeddings for any chat-extracted tasks
+    for task in result.get("extracted_tasks", []):
+        try:
+            task_dict = (
+                task.model_dump()
+                if hasattr(task, "model_dump")
+                else (task.dict() if hasattr(task, "dict") else task)
+            )
+            t_id = task_dict.get("id")
+            t_title = task_dict.get("title", "")
+            t_date = task_dict.get("assigned_date", "")
+            t_status = task_dict.get("status", "PENDING")
+            if t_id and t_title:
+                embedding_service.upsert_embedding_sync(
+                    user_id=user_id,
+                    source_type="TASK",
+                    source_id=UUID(str(t_id)),
+                    content_text=f"{t_title} (assigned: {t_date}, status: {t_status})",
+                    metadata={
+                        "date": str(t_date),
+                        "status": t_status,
+                        "source": task_dict.get("source", "CHAT_ROOM"),
+                    },
+                )
+        except Exception as e:
+            logger.warning(f"Failed to upsert extracted task embedding: {e}")
 
     return ChatMessageResponse(
         reply=result["reply"],

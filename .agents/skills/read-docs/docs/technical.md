@@ -266,6 +266,14 @@ Memori jangka panjang (Core Profile) diperbarui tanpa membebani interaksi real-t
 **4. Tanggung Jawab Output**
 Mengeluarkan JSON terstruktur: `{ response_text, message_type, extracted_tasks[], overload_signal, active_persona }`
 
+**5. RAG Service & Vector Search (pgvector)**
+- **EmbeddingService**: Menghasilkan representasi vektor 768-dimensi menggunakan `models/gemini-embedding-001` (dengan fallback aman) dan menyimpannya di tabel `embeddings`.
+- **RAGService**: Melakukan similarity search terisolasi per user via Supabase RPC `match_embeddings` untuk ground prompt AI Note dan respons chat tanpa halusinasi.
+
+**6. Morning Brief Service**
+- **MorningBriefService**: Mengkalkulasi kapasitas sisa harian, mengambil task pending hari ini dan task missed kemarin, serta menyusun AI Note grounded untuk disajikan via `GET /morning-brief` atau trigger cron per jam `POST /internal/cron/morning-brief`.
+- **Database Storage**: Idempotent upsert ke tabel `morning_briefs` dengan tracking `opened_at` dan `notification_sent`.
+
 ---
 
 ## 7. Environment & Secrets

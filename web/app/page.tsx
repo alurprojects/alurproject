@@ -1,14 +1,23 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { api, Task, AIInsight } from '@/lib/api';
-import { DayBlock } from './components/DayBlock';
-import { BrainDumpModal } from './components/BrainDumpModal';
-import { InsightBanner } from './components/InsightBanner';
-import { CalendarView } from './components/CalendarView';
-import { Sparkles, ChevronLeft, ChevronRight, RotateCcw, Calendar as CalendarIcon, CheckSquare } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { PlannerHeader } from './components/planner/PlannerHeader';
+import { WeekGrid } from './components/planner/WeekGrid';
+import { SomedayDrawer } from './components/planner/SomedayDrawer';
+import { BrainDumpModal } from './components/planner/BrainDumpModal';
+import { TaskEditModal } from './components/planner/TaskEditModal';
+import { PlannerTask, DayInfo } from './components/planner/types';
 
 const DAY_NAMES = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU'];
+const DAY_SHORT_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const MONTH_NAMES = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+  'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'
+];
+const FULL_MONTH_NAMES = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
 
 function getMonday(d: Date): Date {
   const date = new Date(d);
@@ -18,235 +27,300 @@ function getMonday(d: Date): Date {
 }
 
 function formatDateISO(date: Date): string {
-  return date.toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
-function formatDateShort(date: Date): string {
-  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
-  return date.toLocaleDateString('id-ID', options);
-}
+const STORAGE_KEY = 'alur_planner_tasks_v3';
 
-export default function WeeklyPlannerPage() {
+export default function HomePage() {
   const [currentMonday, setCurrentMonday] = useState<Date>(() => getMonday(new Date()));
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [insight, setInsight] = useState<AIInsight | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isBrainDumpOpen, setIsBrainDumpOpen] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'todo' | 'calendar'>('todo');
+  const [tasks, setTasks] = useState<PlannerTask[]>([]);
+  const [isSomedayOpen, setIsSomedayOpen] = useState(true);
+  const [isBrainDumpOpen, setIsBrainDumpOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<PlannerTask | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const todayStr = formatDateISO(new Date());
-  const weekStartStr = formatDateISO(currentMonday);
+  const today = useMemo(() => new Date(), []);
+  const todayStr = useMemo(() => formatDateISO(today), [today]);
 
-  // Generate 7 days for the current week
-  const weekDays = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date(currentMonday);
-    d.setDate(currentMonday.getDate() + i);
-    const dateStr = formatDateISO(d);
-    return {
-      dayName: DAY_NAMES[i],
-      dateStr,
-      formattedDate: formatDateShort(d),
-      isToday: dateStr === todayStr,
-    };
-  });
-
-  const loadData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [fetchedTasks, insights] = await Promise.all([
-        api.getTasks(weekStartStr),
-        api.getSurfacedInsights().catch(() => []),
-      ]);
-      setTasks(fetchedTasks || []);
-      setInsight(insights && insights.length > 0 ? insights[0] : null);
-    } catch (err) {
-      console.error('Failed to load tasks:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [weekStartStr]);
-
+  // Load initial tasks or generate full-width mockup
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        setTasks(JSON.parse(saved));
+      } else {
+        const mon = getMonday(new Date());
+        const d1 = formatDateISO(mon);
+        const d2 = formatDateISO(new Date(mon.getTime() + 1 * 86400000));
+        const d3 = formatDateISO(new Date(mon.getTime() + 2 * 86400000));
+        const d5 = formatDateISO(new Date(mon.getTime() + 4 * 86400000));
 
-  // Week navigation
-  const prevWeek = () => {
+        const initial: PlannerTask[] = [
+          {
+            id: 't-1',
+            title: 'Arahkan kursor untuk centang tugas',
+            completed: false,
+            dateStr: d1,
+            color: 'none',
+            timeEstimate: '15m',
+            order: 0,
+          },
+          {
+            id: 't-2',
+            title: 'Klik teks langsung untuk membuka popup edit',
+            completed: false,
+            dateStr: d1,
+            color: 'none',
+            order: 1,
+          },
+          {
+            id: 't-3',
+            title: 'Seret (drag) tugas ke hari lain',
+            completed: false,
+            dateStr: d1,
+            color: 'none',
+            order: 2,
+          },
+          {
+            id: 't-4',
+            title: 'Pilih warna stabilo untuk prioritas',
+            completed: false,
+            dateStr: d2,
+            color: 'yellow',
+            notes: 'Catatan tambahan untuk tugas penting ini bisa ditulis di dalam popup edit.',
+            subtasks: [
+              { id: 'sub-1', title: 'Subtugas bagian A', completed: true },
+              { id: 'sub-2', title: 'Subtugas bagian B', completed: false },
+            ],
+            order: 0,
+          },
+          {
+            id: 't-5',
+            title: 'Fokus tenang tanpa distraksi',
+            completed: false,
+            dateStr: d2,
+            color: 'peach',
+            timeEstimate: '45m',
+            order: 1,
+          },
+          {
+            id: 't-6',
+            title: 'Minimalis & rapi!',
+            completed: false,
+            dateStr: d3,
+            color: 'green',
+            order: 0,
+          },
+          {
+            id: 't-7',
+            title: 'Tumpahkan ide ke AI Brain-dump',
+            completed: false,
+            dateStr: d5,
+            color: 'blue',
+            order: 0,
+          },
+          {
+            id: 't-8',
+            title: 'Rencana jangka panjang kuartal depan',
+            completed: false,
+            dateStr: 'someday',
+            color: 'none',
+            order: 0,
+          },
+        ];
+        setTasks(initial);
+      }
+    } catch (e) {
+      console.error('Error loading planner tasks', e);
+    } finally {
+      setIsInitialized(true);
+    }
+  }, []);
+
+  // Save to localStorage
+  useEffect(() => {
+    if (isInitialized) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch (e) {
+        console.error('Error saving planner tasks', e);
+      }
+    }
+  }, [tasks, isInitialized]);
+
+  // Generate 7 days for current week
+  const weekDays = useMemo<DayInfo[]>(() => {
+    return Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date(currentMonday);
+      d.setDate(currentMonday.getDate() + i);
+      const dateStr = formatDateISO(d);
+      const isWeekend = i === 5 || i === 6;
+
+      const fullDateText = `${DAY_SHORT_EN[i]}, ${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+
+      return {
+        dateStr,
+        dayName: DAY_NAMES[i],
+        dayNumber: String(d.getDate()),
+        monthName: MONTH_NAMES[d.getMonth()],
+        isToday: dateStr === todayStr,
+        isWeekend,
+        fullDateText,
+      };
+    });
+  }, [currentMonday, todayStr]);
+
+  // Header texts
+  const currentMonthYear = useMemo(() => {
+    const month = FULL_MONTH_NAMES[currentMonday.getMonth()];
+    const year = currentMonday.getFullYear();
+    return `${month} ${year}`;
+  }, [currentMonday]);
+
+  const weekRangeText = useMemo(() => {
+    const endOfWeek = new Date(currentMonday);
+    endOfWeek.setDate(currentMonday.getDate() + 6);
+    return `${currentMonday.getDate()} ${MONTH_NAMES[currentMonday.getMonth()]} – ${endOfWeek.getDate()} ${MONTH_NAMES[endOfWeek.getMonth()]}`;
+  }, [currentMonday]);
+
+  // Task stats
+  const weekDateSet = useMemo(() => new Set(weekDays.map((d) => d.dateStr)), [weekDays]);
+  const currentWeekTasks = useMemo(() => tasks.filter((t) => weekDateSet.has(t.dateStr)), [tasks, weekDateSet]);
+  const completedWeekTasks = useMemo(() => currentWeekTasks.filter((t) => t.completed).length, [currentWeekTasks]);
+  const somedayTasks = useMemo(() => tasks.filter((t) => t.dateStr === 'someday'), [tasks]);
+
+  // Navigation
+  const handlePrevWeek = () => {
     const next = new Date(currentMonday);
     next.setDate(currentMonday.getDate() - 7);
     setCurrentMonday(next);
   };
 
-  const nextWeek = () => {
+  const handleNextWeek = () => {
     const next = new Date(currentMonday);
     next.setDate(currentMonday.getDate() + 7);
     setCurrentMonday(next);
   };
 
-  const resetToToday = () => {
+  const handleResetToday = () => {
     setCurrentMonday(getMonday(new Date()));
   };
 
-  // Task actions
-  const handleToggleTask = async (id: string, status: string) => {
-    await api.toggleTask(id, status);
-    await loadData();
-  };
+  // Task Mutations
+  const handleAddTask = useCallback((dateStr: string, title: string) => {
+    const newTask: PlannerTask = {
+      id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      title,
+      completed: false,
+      dateStr,
+      color: 'none',
+      order: Date.now(),
+    };
+    setTasks((prev) => [...prev, newTask]);
+  }, []);
 
-  const handleDeleteTask = async (id: string) => {
-    await api.deleteTask(id);
-    await loadData();
-  };
+  const handleToggleTask = useCallback((id: string) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    );
+  }, []);
 
-  const handleClarifyTask = async (id: string, minutes: number) => {
-    await api.clarifyTask(id, minutes);
-    await loadData();
-  };
+  const handleUpdateTask = useCallback((updated: PlannerTask) => {
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    setEditingTask(null);
+  }, []);
 
-  const handleFollowUpTask = async (id: string, action: 'LUPA' | 'SKIP' | 'PINDAH') => {
-    await api.followUpTask(id, action);
-    await loadData();
-  };
+  const handleDeleteTask = useCallback((id: string) => {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    setEditingTask(null);
+  }, []);
 
-  const handleRescheduleTask = async (
-    id: string,
-    action: 'ACCEPT' | 'REJECT',
-    targetDate?: string,
-    suggestionId?: string
-  ) => {
-    await api.rescheduleTask(id, action, targetDate, suggestionId);
-    await loadData();
-  };
+  const handleMoveToDate = useCallback((taskId: string, targetDateStr: string) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, dateStr: targetDateStr } : t))
+    );
+  }, []);
 
-  const handleAddTask = async (title: string, assignedDate: string) => {
-    await api.createTask(title, assignedDate);
-    await loadData();
-  };
+  const handleBrainDumpSubmit = useCallback((items: string[], targetDateStr: string) => {
+    const newItems: PlannerTask[] = items.map((title, idx) => ({
+      id: `task-${Date.now()}-${idx}`,
+      title,
+      completed: false,
+      dateStr: targetDateStr,
+      color: 'none',
+      order: Date.now() + idx,
+    }));
+    setTasks((prev) => [...prev, ...newItems]);
+  }, []);
 
-  const handleBrainDumpSubmit = async (text: string) => {
-    await api.brainDump(text);
-    await loadData();
-  };
+  // Compute date label for modal
+  const editingDateLabel = useMemo(() => {
+    if (!editingTask) return '';
+    if (editingTask.dateStr === 'someday') return 'Someday (Belum Terjadwal)';
+    const day = weekDays.find((d) => d.dateStr === editingTask.dateStr);
+    if (day) return day.fullDateText;
+    return editingTask.dateStr;
+  }, [editingTask, weekDays]);
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
-      {/* Top Bar / Header */}
-      <header className="mb-8 flex items-center justify-between gap-4 border-b border-alur-border pb-6">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-alur-ink font-title">
-            ALUR
-          </h1>
-          <p className="text-xs font-medium text-alur-warmgray mt-0.5">
-            Quiet Monochrome Weekly Notebook
-          </p>
-        </div>
+    <main className="min-h-screen bg-alur-bg font-sans flex flex-col text-alur-charcoal selection:bg-alur-ink selection:text-white">
+      {/* Header */}
+      <PlannerHeader
+        currentMonthYear={currentMonthYear}
+        weekRangeText={weekRangeText}
+        onPrevWeek={handlePrevWeek}
+        onNextWeek={handleNextWeek}
+        onResetToday={handleResetToday}
+        onOpenBrainDump={() => setIsBrainDumpOpen(true)}
+        onToggleSomeday={() => setIsSomedayOpen(!isSomedayOpen)}
+        isSomedayOpen={isSomedayOpen}
+        somedayCount={somedayTasks.length}
+        totalWeekTasks={currentWeekTasks.length}
+        completedWeekTasks={completedWeekTasks}
+      />
 
-        {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Tab Switcher: To-do vs Calendar (PRD 3.6 Scope) */}
-          <div className="flex items-center rounded-lg border border-alur-border bg-alur-surface/60 p-0.5 text-xs">
-            <button
-              onClick={() => setActiveTab('todo')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-colors ${
-                activeTab === 'todo'
-                  ? 'bg-alur-ink text-white'
-                  : 'text-alur-warmgray hover:text-alur-charcoal'
-              }`}
-            >
-              <CheckSquare size={13} />
-              <span>To-do</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('calendar')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-colors ${
-                activeTab === 'calendar'
-                  ? 'bg-alur-ink text-white'
-                  : 'text-alur-warmgray hover:text-alur-charcoal'
-              }`}
-            >
-              <CalendarIcon size={13} />
-              <span>Calendar</span>
-            </button>
-          </div>
+      {/* Week Grid with Full-Width Cards */}
+      <WeekGrid
+        days={weekDays}
+        tasks={tasks}
+        onAddTask={handleAddTask}
+        onToggleTask={handleToggleTask}
+        onOpenEdit={(task) => setEditingTask(task)}
+        onDropTask={handleMoveToDate}
+      />
 
-          {/* Week Selector */}
-          <div className="flex items-center rounded-lg border border-alur-border bg-alur-surface/60 p-0.5 text-xs">
-            <button
-              onClick={prevWeek}
-              className="p-1.5 hover:bg-alur-bg rounded text-alur-warmgray hover:text-alur-charcoal transition-colors"
-              title="Minggu Sebelumnya"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              onClick={resetToToday}
-              className="px-2.5 py-1 font-semibold text-alur-charcoal hover:bg-alur-bg rounded transition-colors"
-              title="Kembali ke Hari Ini"
-            >
-              Hari Ini
-            </button>
-            <button
-              onClick={nextWeek}
-              className="p-1.5 hover:bg-alur-bg rounded text-alur-warmgray hover:text-alur-charcoal transition-colors"
-              title="Minggu Depan"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
+      {/* Someday Drawer */}
+      <SomedayDrawer
+        tasks={somedayTasks}
+        isOpen={isSomedayOpen}
+        onToggleOpen={() => setIsSomedayOpen(!isSomedayOpen)}
+        onAddTask={(title) => handleAddTask('someday', title)}
+        onToggleTask={handleToggleTask}
+        onOpenEdit={(task) => setEditingTask(task)}
+        onMoveToDate={handleMoveToDate}
+        todayDateStr={todayStr}
+      />
 
-          {/* Brain-dump FAB */}
-          <button
-            onClick={() => setIsBrainDumpOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-alur-ink text-alur-bg hover:bg-alur-charcoal transition-colors shadow-xs"
-          >
-            <Sparkles size={14} />
-            <span className="hidden sm:inline">Brain-dump</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main View: To-do vs Calendar */}
-      {activeTab === 'todo' ? (
-        <>
-          {/* Surfaced Weekly Insight Banner */}
-          <InsightBanner insight={insight} />
-
-          {/* 7-Day Accordion Container */}
-          <section className="space-y-3">
-            {weekDays.map((day) => {
-              const dayTasks = tasks.filter((t) => t.assigned_date === day.dateStr);
-              return (
-                <DayBlock
-                  key={day.dateStr}
-                  dayName={day.dayName}
-                  dateStr={day.dateStr}
-                  formattedDate={day.formattedDate}
-                  isToday={day.isToday}
-                  tasks={dayTasks}
-                  onToggleTask={handleToggleTask}
-                  onDeleteTask={handleDeleteTask}
-                  onClarifyTask={handleClarifyTask}
-                  onFollowUpTask={handleFollowUpTask}
-                  onRescheduleTask={handleRescheduleTask}
-                  onAddTask={handleAddTask}
-                  onOpenBrainDump={() => setIsBrainDumpOpen(true)}
-                />
-              );
-            })}
-          </section>
-        </>
-      ) : (
-        <CalendarView
-          tasks={tasks}
-          onNavigateToTodo={() => setActiveTab('todo')}
-        />
-      )}
-
-      {/* Brain Dump Modal Dialog */}
+      {/* Quick AI Brain-dump Modal */}
       <BrainDumpModal
         isOpen={isBrainDumpOpen}
         onClose={() => setIsBrainDumpOpen(false)}
         onSubmit={handleBrainDumpSubmit}
+        todayDateStr={todayStr}
+      />
+
+      {/* Tweek-style Task Edit Popup Modal */}
+      <TaskEditModal
+        task={editingTask}
+        isOpen={!!editingTask}
+        onClose={() => setEditingTask(null)}
+        onUpdateTask={handleUpdateTask}
+        onDeleteTask={handleDeleteTask}
+        dateLabel={editingDateLabel}
       />
     </main>
   );

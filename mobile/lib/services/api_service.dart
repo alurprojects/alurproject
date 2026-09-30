@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../models/morning_brief.dart';
 import '../models/task.dart';
 
 class ApiService {
@@ -247,6 +248,40 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/chat/history');
     final response = await http.delete(uri, headers: _headers);
     return response.statusCode == 200;
+  }
+
+  Future<MorningBriefData?> fetchMorningBrief({String? date}) async {
+    final uri = Uri.parse('$baseUrl/morning-brief').replace(
+      queryParameters: date != null ? {'date': date} : null,
+    );
+    try {
+      final response = await http.get(uri, headers: _headers);
+      if (response.statusCode == 200) {
+        final jsonMap = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = jsonMap['data'] as Map<String, dynamic>?;
+        if (data != null) {
+          return MorningBriefData.fromJson(data);
+        }
+      }
+    } catch (_) {
+      return null;
+    }
+    return null;
+  }
+
+  Future<Task> updateTaskTitle({
+    required String taskId,
+    required String title,
+  }) async {
+    final uri = Uri.parse('$baseUrl/tasks/$taskId');
+    final body = jsonEncode({'title': title});
+    final response = await http.patch(uri, headers: _headers, body: body);
+    if (response.statusCode == 200) {
+      final jsonMap = jsonDecode(response.body) as Map<String, dynamic>;
+      return Task.fromJson(jsonMap);
+    } else {
+      throw Exception('Failed to update task title: ${response.statusCode}');
+    }
   }
 }
 

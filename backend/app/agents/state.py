@@ -46,10 +46,15 @@ class AlurChatState(TypedDict, total=False):
     recent_insights: Optional[List[str]]
     conversation_context: List[Dict[str, str]]
     
-    # Companion classification and tone
+    # Companion classification, dynamic persona, and memory
     message_type: str  # 'TASK_CAPTURE' | 'REFLECTION' | 'CHAT' | 'CAPACITY_QUERY'
     tone_used: str     # 'HONEST' | 'GENTLE'
+    active_persona: str  # 'HONEST' | 'GENTLE' | 'STRATEGIST' | 'MINIMALIST'
     mood_detected: Optional[str]  # e.g., 'overload', 'burnout', or None
+    
+    # 3-Layer Hierarchical Memory (Hermes Style)
+    ai_profile_summary: Optional[Dict[str, Any]]  # Level 1: Core Profile
+    rag_context: Optional[str]                   # Level 3: Archival RAG
     
     # Task extraction & scheduling
     draft_tasks: List[DraftTask]
@@ -57,3 +62,4 @@ class AlurChatState(TypedDict, total=False):
     
     # Final AI response text
     ai_response: str
+

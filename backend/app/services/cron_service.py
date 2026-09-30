@@ -403,3 +403,181 @@ class CronService:
             "deleted_count": deleted_count,
         }
 
+    def run_background_memory_condenser(
+        self,
+        user_id: Optional[UUID] = None,
+    ) -> Dict[str, Any]:
+        """Nightly Background Memory Condenser:
+
+        Summarizes recent conversation logs into users.ai_profile_summary
+        to maintain a tight, token-efficient Core Profile for the Hermes-style companion.
+        """
+        today = date.today()
+        since_date = today - timedelta(days=2)
+
+        if user_id:
+            users_to_process = [{"id": str(user_id)}]
+        else:
+            users_res = self.supabase.table("users").select("id, ai_profile_summary").execute()
+            users_to_process = users_res.data or []
+
+        processed_count = 0
+        updated_count = 0
+
+        for user in users_to_process:
+            u_id = user["id"]
+            processed_count += 1
+
+            # Fetch recent user logs
+            logs_res = (
+                self.supabase.table("conversation_logs")
+                .select("content, role, message_type, session_date")
+                .eq("user_id", u_id)
+                .gte("session_date", since_date.isoformat())
+                .order("created_at", desc=False)
+                .limit(20)
+                .execute()
+            )
+            logs = logs_res.data or []
+            if not logs:
+                continue
+
+            curr_profile = user.get("ai_profile_summary")
+            if curr_profile is None:
+                u_res = self.supabase.table("users").select("ai_profile_summary").eq("id", u_id).single().execute()
+                curr_profile = (u_res.data or {}).get("ai_profile_summary") or {}
+
+            updated_summary = self._condense_user_memory(curr_profile, logs)
+
+            self.supabase.table("users").update({
+                "ai_profile_summary": updated_summary,
+            }).eq("id", u_id).execute()
+            updated_count += 1
+
+        return {
+            "status": "success",
+            "job": "background-memory-condenser",
+            "users_processed": processed_count,
+            "profiles_updated": updated_count,
+        }
+
+    def _condense_user_memory(
+        self, current_profile: Dict[str, Any], recent_logs: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Condense logs into compact ai_profile_summary with LLM or deterministic fallback."""
+        import json
+        from app.core.llm import get_batch_llm
+
+        llm = get_batch_llm()
+        chat_history = "\n".join([f"{l.get('role', 'USER')}: {l.get('content', '')}" for l in recent_logs])
+
+        if llm:
+            try:
+                from langchain_core.prompts import PromptTemplate
+                from pydantic import BaseModel, Field
+
+                class CondenserOutput(BaseModel):
+                    work_style: str = Field(..., description="1-2 sentences on how the user works and plans")
+                    current_stress: str = Field(..., description="low, moderate, or high")
+                    preferred_tone: str = Field(..., description="HONEST or GENTLE")
+                    frequent_topics: List[str] = Field(default_factory=list, description="Top 3-5 topics/domains")
+
+                prompt = PromptTemplate.from_template(
+                    "You are ALUR's Memory Condenser. Summarize these recent chats into a dense, token-efficient profile (~50 tokens).\n"
+                    "Current Profile: {current_profile}\n"
+                    "Recent Chats:\n{chats}\n"
+                    "Output a structured profile."
+                )
+                chain = prompt | llm.with_structured_output(CondenserOutput)
+                res: CondenserOutput = chain.invoke({
+                    "current_profile": json.dumps(current_profile, ensure_ascii=False),
+                    "chats": chat_history[:2000],
+                })
+                return {
+                    "work_style": res.work_style,
+                    "current_stress": res.current_stress,
+                    "preferred_tone": res.preferred_tone,
+                    "frequent_topics": res.frequent_topics,
+                    "last_condensed_at": datetime.now(timezone.utc).isoformat(),
+                }
+            except Exception as e:
+                logger.warning(f"LLM memory condenser failed: {e}. Falling back to deterministic condenser.")
+
+        # Deterministic fallback
+        all_text = " ".join([l.get("content", "").lower() for l in recent_logs if l.get("role") == "USER"])
+        burnout_signals = ["capek", "lelah", "burnout", "stres", "overwhelmed", "pusing"]
+        is_stressed = any(kw in all_text for kw in burnout_signals)
+
+        return {
+            "work_style": current_profile.get("work_style", "Pragmatic, focuses on daily tasks"),
+            "current_stress": "high" if is_stressed else "normal",
+            "preferred_tone": "GENTLE" if is_stressed else "HONEST",
+            "frequent_topics": current_profile.get("frequent_topics", []),
+            "last_condensed_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+    def run_morning_brief_cron(
+        self,
+        user_id: Optional[UUID] = None,
+        force_generate: bool = False,
+    ) -> Dict[str, Any]:
+        """Generate morning briefs for users whose local time matches their reminder_hour.
+
+        Timezone-aware: Checks current local hour in each user's configured timezone.
+        """
+        import zoneinfo
+        from app.services.embedding_service import EmbeddingService
+        from app.services.rag_service import RAGService
+        from app.services.morning_brief_service import MorningBriefService
+
+        rag_service = RAGService(EmbeddingService(self.supabase))
+        brief_service = MorningBriefService(self.supabase, rag_service)
+
+        current_utc = datetime.now(timezone.utc)
+
+        if user_id:
+            users_res = self.supabase.table("users").select("id, timezone, preferences").eq("id", str(user_id)).execute()
+            users_list = users_res.data or []
+        else:
+            users_res = self.supabase.table("users").select("id, timezone, preferences").execute()
+            users_list = users_res.data or []
+
+        processed_count = 0
+        generated_count = 0
+
+        for user in users_list:
+            u_id = UUID(user["id"])
+            user_tz_str = user.get("timezone") or "Asia/Jakarta"
+            try:
+                tz = zoneinfo.ZoneInfo(user_tz_str)
+            except Exception:
+                tz = zoneinfo.ZoneInfo("Asia/Jakarta")
+
+            local_dt = current_utc.astimezone(tz)
+            local_hour = local_dt.hour
+            local_date = local_dt.date()
+
+            prefs = user.get("preferences") or {}
+            notif_prefs = prefs.get("notifications") or {}
+            reminder_hour = int(notif_prefs.get("reminder_hour", 8))
+            brief_enabled = notif_prefs.get("morning_brief_enabled", True)
+
+            due = force_generate or (user_id is not None) or (local_hour == reminder_hour and brief_enabled)
+
+            if due:
+                processed_count += 1
+                try:
+                    brief_service.generate_brief_sync(user_id=u_id, brief_date=local_date)
+                    generated_count += 1
+                except Exception as e:
+                    logger.error(f"Failed to generate morning brief for user {u_id}: {e}")
+
+        return {
+            "status": "success",
+            "job": "morning-brief",
+            "users_matched": processed_count,
+            "briefs_generated": generated_count,
+        }
+
+
+

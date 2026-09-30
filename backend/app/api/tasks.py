@@ -1,9 +1,10 @@
+import logging
 from datetime import date, timedelta
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 
-from app.api.deps import get_current_user_id, get_task_service
+from app.api.deps import get_current_user_id, get_embedding_service, get_task_service
 from app.schemas.task import (
     TaskClarifyRequest,
     TaskCreate,
@@ -13,9 +14,31 @@ from app.schemas.task import (
     TaskUpdate,
     WeekTasksResponse,
 )
+from app.services.embedding_service import EmbeddingService
 from app.services.task_service import TaskService
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/tasks", tags=["tasks"])
+
+
+def _sync_task_embedding(embedding_service: EmbeddingService, user_id: UUID, task: TaskResponse) -> None:
+    """Helper to synchronously upsert vector embedding for a task."""
+    try:
+        embedding_service.upsert_embedding_sync(
+            user_id=user_id,
+            source_type="TASK",
+            source_id=task.id,
+            content_text=f"{task.title} (assigned: {task.assigned_date}, status: {task.status})",
+            metadata={
+                "date": str(task.assigned_date),
+                "status": task.status,
+                "source": task.source,
+                "goal_id": str(task.goal_id) if task.goal_id else None,
+            },
+        )
+    except Exception as e:
+        logger.warning(f"Failed to upsert task embedding for {task.id}: {e}")
 
 
 def _get_monday(d: date) -> date:
@@ -43,9 +66,12 @@ def create_task(
     task_in: TaskCreate,
     user_id: UUID = Depends(get_current_user_id),
     task_service: TaskService = Depends(get_task_service),
+    embedding_service: EmbeddingService = Depends(get_embedding_service),
 ) -> TaskResponse:
     """Create a new task manually."""
-    return task_service.create_task(user_id=user_id, task_in=task_in)
+    task = task_service.create_task(user_id=user_id, task_in=task_in)
+    _sync_task_embedding(embedding_service, user_id, task)
+    return task
 
 
 @router.patch("/{task_id}", response_model=TaskResponse)
@@ -54,9 +80,13 @@ def update_task(
     task_in: TaskUpdate,
     user_id: UUID = Depends(get_current_user_id),
     task_service: TaskService = Depends(get_task_service),
+    embedding_service: EmbeddingService = Depends(get_embedding_service),
 ) -> TaskResponse:
     """Update a task (e.g. toggle status PENDING/DONE, edit title, or reschedule)."""
-    return task_service.update_task(user_id=user_id, task_id=task_id, task_in=task_in)
+    task = task_service.update_task(user_id=user_id, task_id=task_id, task_in=task_in)
+    _sync_task_embedding(embedding_service, user_id, task)
+    return task
+
 
 
 @router.patch("/{task_id}/clarify", response_model=TaskResponse)

@@ -44,3 +44,30 @@ def get_task_service(
 ) -> TaskService:
     """Dependency provider for TaskService."""
     return TaskService(supabase)
+
+
+def get_embedding_service(
+    supabase: Client = Depends(get_supabase_client),
+) -> "EmbeddingService":
+    """Dependency provider for EmbeddingService."""
+    from app.services.embedding_service import EmbeddingService
+    return EmbeddingService(supabase)
+
+
+def get_rag_service(
+    embedding_service: "EmbeddingService" = Depends(get_embedding_service),
+) -> "RAGService":
+    """Dependency provider for RAGService."""
+    from app.services.rag_service import RAGService
+    return RAGService(embedding_service)
+
+
+def get_morning_brief_service(
+    supabase: Client = Depends(get_supabase_client),
+    rag_service: "RAGService" = Depends(get_rag_service),
+) -> "MorningBriefService":
+    """Dependency provider for MorningBriefService."""
+    from app.services.morning_brief_service import MorningBriefService
+    return MorningBriefService(supabase, rag_service)
+
+

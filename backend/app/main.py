@@ -14,6 +14,7 @@ from app.api.chat import router as chat_router
 from app.api.debug_cron import router as debug_cron_router
 from app.api.insights import router as insights_router
 from app.api.internal_cron import router as internal_cron_router
+from app.api.morning_brief import router as morning_brief_router
 from app.api.tasks import router as tasks_router
 from app.core.config import settings
 
@@ -42,8 +43,10 @@ app.include_router(tasks_router)
 app.include_router(chat_router)
 app.include_router(brain_dump_router)
 app.include_router(insights_router)
+app.include_router(morning_brief_router)
 app.include_router(debug_cron_router)
 app.include_router(internal_cron_router)
+
 
 
 @app.get("/health", tags=["system"])

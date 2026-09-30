@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
+import '../../models/morning_brief.dart';
 import '../../models/task.dart';
 import '../../services/api_service.dart';
 import '../../widgets/day_block.dart';
 import '../../widgets/day_strip.dart';
+import '../../widgets/morning_brief_banner.dart';
 import '../../widgets/pill_button.dart';
 
 enum TodoViewMode { dailyFocus, weeklyOverview }
@@ -32,6 +34,8 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
   late DateTime _currentMonday;
   WeekData? _weekData;
   List<Insight> _insights = [];
+  MorningBriefData? _morningBrief;
+  bool _isBriefDismissed = false;
   bool _isLoading = true;
   String? _errorMessage;
   int _expandedDayIndex = -1;
@@ -64,6 +68,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
     try {
       final data = await widget.apiService.fetchWeekTasks(weekDate: weekDateStr);
       final insights = await widget.apiService.fetchInsights();
+      final morningBrief = await widget.apiService.fetchMorningBrief();
       final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
       // Find index of today or default to Monday (0)
@@ -75,6 +80,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
       setState(() {
         _weekData = data;
         _insights = insights;
+        _morningBrief = morningBrief;
         _isLoading = false;
         _expandedDayIndex = todayIdx;
         _selectedDayIndex = todayIdx;
@@ -247,6 +253,102 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
         );
       }
     }
+  }
+
+  Future<void> _handleEditTaskTitle(String taskId, String newTitle) async {
+    try {
+      await widget.apiService.updateTaskTitle(taskId: taskId, title: newTitle);
+      _loadWeek();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update task: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleDeleteTask(String taskId) async {
+    try {
+      await widget.apiService.deleteTask(taskId: taskId);
+      _loadWeek();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete task: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleFollowUpMissed(String taskId, String action) async {
+    try {
+      await widget.apiService.followUpTask(taskId: taskId, action: action);
+      _loadWeek();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to follow up: $e')),
+        );
+      }
+    }
+  }
+
+  void _showQuickAddTaskDialog(String dayDate, int dayIndex) {
+    final controller = TextEditingController();
+    final isDark = widget.isDarkMode;
+    final primaryTextColor = isDark ? AppColors.darkTextPrimary : AppColors.charcoal;
+    final secondaryTextColor = isDark ? AppColors.darkTextSecondary : AppColors.warmGray;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.warmOffWhite,
+        title: Text(
+          'Tambah Task',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: primaryTextColor,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(color: primaryTextColor),
+          decoration: InputDecoration(
+            hintText: 'Nama task baru...',
+            hintStyle: TextStyle(color: secondaryTextColor),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: isDark ? AppColors.darkBorder : AppColors.hairlineGray,
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('Batal', style: TextStyle(color: secondaryTextColor)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? AppColors.darkActiveAccent : AppColors.inkBlack,
+              foregroundColor: isDark ? Colors.black : Colors.white,
+            ),
+            onPressed: () {
+              final title = controller.text.trim();
+              if (title.isNotEmpty) {
+                _handleAddTask(dayDate, title, dayIndex);
+              }
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Tambah'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _openBrainDumpSheet() {
@@ -643,18 +745,42 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                           itemBuilder: (context, index) {
                             final day = _weekData!.days[index];
                             final shadeIndex = index.clamp(0, AppColors.lightDayShades.length - 1);
+                            final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+                            final showMorningBrief = day.date == todayStr &&
+                                _morningBrief != null &&
+                                !_isBriefDismissed;
 
                             return SingleChildScrollView(
                               key: ValueKey('DailyFocus_${day.date}'),
-                              child: DayBlock(
-                                dayData: day,
-                                shadeIndex: shadeIndex,
-                                onToggleTask: (task, isDone) => _toggleTaskStatus(task, isDone, index),
-                                onAddTask: (title) => _handleAddTask(day.date, title, index),
-                                onClarifyTask: (task, mins) => _handleClarifyTask(task, mins, index),
-                                onFollowUpAction: _handleFollowUp,
-                                onRescheduleAction: _handleReschedule,
-                                onOpenBrainDump: _openBrainDumpSheet,
+                              child: Column(
+                                children: [
+                                  if (showMorningBrief)
+                                    MorningBriefBanner(
+                                      brief: _morningBrief!,
+                                      onDismiss: () {
+                                        setState(() {
+                                          _isBriefDismissed = true;
+                                        });
+                                      },
+                                      onEditTask: (taskId, newTitle) => _handleEditTaskTitle(taskId, newTitle),
+                                      onDeleteTask: (taskId) => _handleDeleteTask(taskId),
+                                      onFollowUpMissed: (taskId, action) => _handleFollowUpMissed(taskId, action),
+                                      onAddTask: () => _showQuickAddTaskDialog(day.date, index),
+                                      onOpenChat: () {
+                                        widget.onOpenChat?.call("Mau cerita tentang rencana hari ini");
+                                      },
+                                    ),
+                                  DayBlock(
+                                    dayData: day,
+                                    shadeIndex: shadeIndex,
+                                    onToggleTask: (task, isDone) => _toggleTaskStatus(task, isDone, index),
+                                    onAddTask: (title) => _handleAddTask(day.date, title, index),
+                                    onClarifyTask: (task, mins) => _handleClarifyTask(task, mins, index),
+                                    onFollowUpAction: _handleFollowUp,
+                                    onRescheduleAction: _handleReschedule,
+                                    onOpenBrainDump: _openBrainDumpSheet,
+                                  ),
+                                ],
                               ),
                             );
                           },

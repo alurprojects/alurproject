@@ -1,4 +1,4 @@
-﻿from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from supabase import Client
@@ -63,6 +63,12 @@ def trigger_internal_cron_job(
     elif normalized_job == "conversation-log-hard-delete":
         return cron_service.run_conversation_hard_delete()
 
+    elif normalized_job in ("background-memory-condenser", "memory-condenser"):
+        return cron_service.run_background_memory_condenser(user_id=target_user_id)
+
+    elif normalized_job in ("morning-brief", "morning-brief-generator"):
+        return cron_service.run_morning_brief_cron(user_id=target_user_id)
+
     elif normalized_job == "all":
         r_nightly = cron_service.run_nightly_status_check(user_id=target_user_id)
         r_rec = cron_service.run_weekly_recurrence_generator(user_id=target_user_id)
@@ -73,6 +79,8 @@ def trigger_internal_cron_job(
         )
         r_notify = cron_service.run_conversation_retention_notify()
         r_delete = cron_service.run_conversation_hard_delete()
+        r_condenser = cron_service.run_background_memory_condenser(user_id=target_user_id)
+        r_brief = cron_service.run_morning_brief_cron(user_id=target_user_id)
         return {
             "status": "success",
             "job": "all",
@@ -82,6 +90,8 @@ def trigger_internal_cron_job(
                 "reflection": r_ref,
                 "retention_notify": r_notify,
                 "retention_hard_delete": r_delete,
+                "memory_condenser": r_condenser,
+                "morning_brief": r_brief,
             },
         }
 
@@ -91,6 +101,7 @@ def trigger_internal_cron_job(
             detail=(
                 f"Unknown job_name '{job_name}'. Valid jobs: 'nightly-status-check', "
                 "'weekly-recurrence' ('weekly-recurrence-generator'), 'weekly-reflection' ('reflection'), "
-                "'conversation-log-notify-pending', 'conversation-log-hard-delete', 'all'"
+                "'conversation-log-notify-pending', 'conversation-log-hard-delete', 'background-memory-condenser', "
+                "'morning-brief', 'all'"
             ),
         )
