@@ -51,11 +51,12 @@ class ApiService {
     int? estimatedMinutes,
   }) async {
     final uri = Uri.parse('$baseUrl/tasks');
-    final body = jsonEncode({
+    final payload = <String, dynamic>{
       'title': title,
       'assigned_date': assignedDate,
-      'estimated_minutes': ?estimatedMinutes,
-    });
+    };
+    if (estimatedMinutes != null) payload['estimated_minutes'] = estimatedMinutes;
+    final body = jsonEncode(payload);
 
     final response = await http.post(uri, headers: _headers, body: body);
 

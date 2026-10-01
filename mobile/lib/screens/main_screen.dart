@@ -128,33 +128,27 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
-    // Native Mobile 4-Tab Navigation
+    // Native Mobile 5-slot pill — Home bulat hitam di tengah (sesuai gambar)
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          // Tab 0: To-do (Weekly/Daily Hybrid View)
           WeeklyScreen(
             apiService: widget.apiService,
             onToggleTheme: widget.onToggleTheme,
             isDarkMode: widget.isDarkMode,
             onOpenChat: _openChatWithPrompt,
           ),
-          // Tab 1: Chat Room (AI Companion & Brain-dump)
           ChatRoomScreen(
             isDarkMode: widget.isDarkMode,
             initialPrompt: _initialChatPrompt,
             apiService: widget.apiService,
-            onTasksCreated: () {
-              setState(() {});
-            },
+            onTasksCreated: () => setState(() {}),
           ),
-          // Tab 2: Calendar (Time-block View)
           CalendarScreen(
             isDarkMode: widget.isDarkMode,
             onNavigateToTodo: () => _onTabTapped(0),
           ),
-          // Tab 3: Profile (Account Settings & Retention)
           ProfileScreen(
             onToggleTheme: widget.onToggleTheme,
             isDarkMode: widget.isDarkMode,
@@ -163,57 +157,160 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: navBackgroundColor,
-          border: Border(
-            top: BorderSide(
-              color: navBorderColor,
-              width: 1.0,
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: Container(
+            height: 72,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2C2B29) : Colors.white,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: isDark ? AppColors.darkBorder : const Color(0xFFE8E6E1),
+              ),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 6)),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 2, offset: const Offset(0, 1)),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _NavSideItem(
+                  icon: Icons.check_circle_outline_rounded,
+                  activeIcon: Icons.check_circle_rounded,
+                  label: 'To-do',
+                  active: _currentIndex == 0,
+                  isDark: isDark,
+                  onTap: () => _onTabTapped(0),
+                ),
+                _NavSideItem(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  activeIcon: Icons.chat_bubble_rounded,
+                  label: 'Chat Room',
+                  active: _currentIndex == 1,
+                  isDark: isDark,
+                  onTap: () => _onTabTapped(1),
+                ),
+                // HOME — center big black circle (the hero, per gambar)
+                _NavCenterHome(
+                  active: _currentIndex == 0, // highlight when on To-do
+                  isDark: isDark,
+                  onTap: () => _onTabTapped(0),
+                ),
+                _NavSideItem(
+                  icon: Icons.calendar_today_outlined,
+                  activeIcon: Icons.calendar_today_rounded,
+                  label: 'Calendar',
+                  active: _currentIndex == 2,
+                  isDark: isDark,
+                  onTap: () => _onTabTapped(2),
+                ),
+                _NavSideItem(
+                  icon: Icons.person_outline_rounded,
+                  activeIcon: Icons.person_rounded,
+                  label: 'Profile',
+                  active: _currentIndex == 3,
+                  isDark: isDark,
+                  onTap: () => _onTabTapped(3),
+                ),
+              ],
             ),
           ),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onTabTapped,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: navBackgroundColor,
-          elevation: 0,
-          selectedItemColor: activeColor,
-          unselectedItemColor: inactiveColor,
-          selectedLabelStyle: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.2,
-          ),
-          unselectedLabelStyle: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.2,
-          ),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.check_circle_outline_rounded),
-              activeIcon: Icon(Icons.check_circle_rounded),
-              label: 'To-do',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline_rounded),
-              activeIcon: Icon(Icons.chat_bubble_rounded),
-              label: 'Chat Room',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_outlined),
-              activeIcon: Icon(Icons.calendar_today_rounded),
-              label: 'Calendar',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'Profile',
-            ),
+      ),
+    );
+  }
+}
+
+class _NavSideItem extends StatelessWidget {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool active;
+  final bool isDark;
+  final VoidCallback onTap;
+  const _NavSideItem({required this.icon, required this.activeIcon, required this.label, required this.active, required this.isDark, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = active
+        ? (isDark ? Colors.white : AppColors.inkBlack)
+        : (isDark ? AppColors.darkTextSecondary : const Color(0xFF9A9590));
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 62,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(active ? activeIcon : icon, size: 22, color: color),
+            const SizedBox(height: 3),
+            Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                  letterSpacing: 0.1,
+                  color: color,
+                  height: 1,
+                )),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _NavCenterHome extends StatelessWidget {
+  final bool active;
+  final bool isDark;
+  final VoidCallback onTap;
+  const _NavCenterHome({required this.active, required this.isDark, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white : Colors.black,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 10, offset: const Offset(0, 3)),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              active ? Icons.home_rounded : Icons.home_outlined,
+              size: 24,
+              color: isDark ? Colors.black : Colors.white,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text('Home',
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.1,
+                color: active
+                    ? (isDark ? Colors.white : AppColors.inkBlack)
+                    : (isDark ? AppColors.darkTextSecondary : const Color(0xFF9A9590)),
+                height: 1,
+              )),
+        ],
       ),
     );
   }

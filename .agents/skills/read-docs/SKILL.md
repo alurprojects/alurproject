@@ -31,6 +31,8 @@ Pilih dokumen yang tepat sesuai konteks pekerjaan yang sedang dikerjakan:
 | **Skema Database, SQL Migrasi, RLS, Cron Jobs, ERD** | [`DATABASE.md`](./../../.agents/skills/read-docs/docs/DATABASE.md) | • §2 (ERD incl. conversation_logs)<br>• §5-6 (tasks + conversation_logs DDL & retensi)<br>• §8 (ai_insights + insight_type)<br>• §10 (State machine missed_follow_up)<br>• §11 (pg_cron: nightly, weekly, retention) |
 | **Deployment & Hosting** | [`DEPLOYMENT_GUIDE.md`](./../../.agents/skills/read-docs/docs/DEPLOYMENT_GUIDE.md) | • §2 (Backend FastAPI di Vercel Serverless)<br>• §3 (Web Next.js di Vercel)<br>• §4 (DNS Configuration)<br>• §5 (Cron via cron-job.org) |
 | **Status Audit & Resolusi** | [`feedback.md`](./../../.agents/skills/read-docs/docs/feedback.md) | • Log resolusi audit B1-B6 dan catatan perbaikan arsitektur |
+| **Prioritas Fitur (MoSCoW)** | [`MOSCOW_FEATURES.md`](./../../.agents/skills/read-docs/docs/MOSCOW_FEATURES.md) | • 13 Must / 9 Should / 8 Could / 9 Won't<br>• Peta P1-P3, roadmap R1–R4, metrik DCDC<br>• Keputusan "mendelegasikan = reschedule" |
+| **Log Progres Harian** | [`track-progress/YYYY-MM-DD.md`](./../../.agents/skills/read-docs/docs/track-progress/) | • Ringkasan harian, evaluasi MoSCoW, keputusan Web-vs-Mobile, next step |
 
 > [!CAUTION]
 > **Dokumen Lama**: Semua file di `.agents/skills/read-docs/archive/` adalah **arsip historis**. Jangan rujuk lagi — gunakan file di `.agents/skills/read-docs/docs/` sebagai satu-satunya source of truth.
