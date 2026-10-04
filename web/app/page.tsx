@@ -135,7 +135,16 @@ function PlannerGate() {
         setCapacityHours(null);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Gagal memuat Target Harian');
+      const raw = e instanceof Error ? e.message : 'Gagal memuat Target Harian';
+      // Bedakan backend mati (500/FUNCTION_INVOCATION_FAILED) vs data kosong.
+      // Jangan tampilkan pesan 500 sebagai empty state agar tidak membingungkan.
+      if (/500|FUNCTION_INVOCATION_FAILED|Failed to fetch|NetworkError/i.test(raw)) {
+        setError(
+          'Backend API tidak merespons (500). Tunggu deploy Vercel selesai, lalu tekan Coba lagi. Endpoint: /tasks.'
+        );
+      } else {
+        setError(raw);
+      }
     } finally {
       setLoading(false);
     }
@@ -337,6 +346,21 @@ function PlannerGate() {
         </div>
       ) : (
         <>
+          {currentWeekTasks.length === 0 && !error ? (
+            <div className="px-6 py-10 text-center">
+              <p className="text-sm font-bold">Target Harian masih kosong</p>
+              <p className="mt-1 text-xs text-alur-warmgray">
+                Tambahkan 1 goal atau tulis tugas pertama di kolom hari ini. Morning Brief butuh bahan untuk memilih Top 3.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsGoalOpen(true)}
+                className="mt-4 px-4 py-2 text-xs font-bold rounded-lg bg-alur-ink text-white"
+              >
+                Buat Goal pertama
+              </button>
+            </div>
+          ) : null}
           <div className="flex-1 overflow-x-auto min-h-[520px]">
             <div className="flex min-w-[1050px] w-full border-b border-alur-border">
               {weekDays.map((day) => (
@@ -359,21 +383,6 @@ function PlannerGate() {
             </div>
           </div>
 
-          {currentWeekTasks.length === 0 && (
-            <div className="px-6 py-10 text-center">
-              <p className="text-sm font-bold">Target Harian masih kosong</p>
-              <p className="mt-1 text-xs text-alur-warmgray">
-                Tambahkan 1 goal atau tulis tugas pertama di kolom hari ini. Morning Brief butuh bahan untuk memilih Top 3.
-              </p>
-              <button
-                type="button"
-                onClick={() => setIsGoalOpen(true)}
-                className="mt-4 px-4 py-2 text-xs font-bold rounded-lg bg-alur-ink text-white"
-              >
-                Buat Goal pertama
-              </button>
-            </div>
-          )}
         </>
       )}
 
