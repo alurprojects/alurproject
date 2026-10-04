@@ -90,9 +90,18 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
   });
 
   if (response.status === 204) return undefined as T;
+  const contentType = response.headers.get('content-type') || '';
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`API Error ${response.status}: ${errorText}`);
+    throw new Error(`API Error ${response.status}: ${errorText.slice(0, 200)}`);
+  }
+  // Backend misconfigured serves raw .py source (octet-stream) — surface clearly.
+  if (!contentType.includes('application/json')) {
+    const body = await response.text();
+    throw new Error(
+      `API Error: backend returned non-JSON (${contentType || 'unknown'}). ` +
+        `Body head: ${body.slice(0, 120)}`
+    );
   }
   return response.json();
 }
