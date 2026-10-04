@@ -11,10 +11,12 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const nextConfig = {
   reactStrictMode: true,
   // Petakan PUBLIC_* (root .env) agar tersedia di browser sebagai NEXT_PUBLIC_*
+  // NEXT_PUBLIC_SITE_URL opsional: kunci domain prod agar OAuth tidak mental ke localhost.
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   },
   async rewrites() {
     const backendUrl = process.env.BACKEND_API_URL || 'https://api.alurproject.web.id';

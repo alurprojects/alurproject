@@ -19,13 +19,20 @@ export const AuthScreen: React.FC<{ envReady: boolean; authError: boolean }> = (
     setLoading(true);
     try {
       const supabase = getSupabaseBrowser();
+      // redirectTo dinamis ikut domain prod agar tidak mental ke localhost.
+      const siteUrl = (
+        process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      ).replace(/\/$/, '');
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${siteUrl}/auth/callback`,
         },
       });
-      if (oauthError) setError(oauthError.message);
+      if (oauthError) {
+        setError(oauthError.message);
+        setLoading(false);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Gagal login Google');
       setLoading(false);
