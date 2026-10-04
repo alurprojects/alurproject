@@ -8,6 +8,7 @@ from supabase import Client
 from app.agents.graph import run_chat_message
 from app.api.deps import get_current_user_id, get_embedding_service
 from app.core.supabase import get_supabase_client
+from typing import Optional
 from app.services.embedding_service import EmbeddingService
 from app.schemas.chat import (
     ChatActionResponse,
@@ -29,7 +30,7 @@ def send_chat_message(
     request: ChatMessageRequest,
     user_id: UUID = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase_client),
-    embedding_service: EmbeddingService = Depends(get_embedding_service),
+    embedding_service: Optional[EmbeddingService] = Depends(get_embedding_service),
 ) -> ChatMessageResponse:
     """Send user message to Chat Room.
 
@@ -42,6 +43,15 @@ def send_chat_message(
         user_id=user_id,
         supabase=supabase,
     )
+
+    if embedding_service is None:
+        return ChatMessageResponse(
+            reply=result["reply"],
+            message_type=result["message_type"],
+            tone_used=result["tone_used"],
+            mood_detected=result.get("mood_detected"),
+            extracted_tasks=result.get("extracted_tasks", []),
+        )
 
     # 3.1 Hook: Upsert embeddings for persisted conversation logs
     inserted_logs = result.get("conversation_logs", [])

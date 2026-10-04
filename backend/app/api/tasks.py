@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 
 from app.api.deps import get_current_user_id, get_embedding_service, get_task_service
+from typing import Optional
 from app.schemas.task import (
     TaskClarifyRequest,
     TaskCreate,
@@ -22,8 +23,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-def _sync_task_embedding(embedding_service: EmbeddingService, user_id: UUID, task: TaskResponse) -> None:
-    """Helper to synchronously upsert vector embedding for a task."""
+def _sync_task_embedding(embedding_service: EmbeddingService | None, user_id: UUID, task: TaskResponse) -> None:
+    """Helper to synchronously upsert vector embedding for a task.
+
+    Embedding tidak boleh menggagalkan request utama (Vercel 10s + tanpa
+    GEMINI_API_KEY di env tertentu). Semua error ditelan jadi warning.
+    """
+    if embedding_service is None:
+        return
     try:
         embedding_service.upsert_embedding_sync(
             user_id=user_id,
@@ -66,7 +73,7 @@ def create_task(
     task_in: TaskCreate,
     user_id: UUID = Depends(get_current_user_id),
     task_service: TaskService = Depends(get_task_service),
-    embedding_service: EmbeddingService = Depends(get_embedding_service),
+    embedding_service: Optional[EmbeddingService] = Depends(get_embedding_service),
 ) -> TaskResponse:
     """Create a new task manually."""
     task = task_service.create_task(user_id=user_id, task_in=task_in)
@@ -80,7 +87,7 @@ def update_task(
     task_in: TaskUpdate,
     user_id: UUID = Depends(get_current_user_id),
     task_service: TaskService = Depends(get_task_service),
-    embedding_service: EmbeddingService = Depends(get_embedding_service),
+    embedding_service: Optional[EmbeddingService] = Depends(get_embedding_service),
 ) -> TaskResponse:
     """Update a task (e.g. toggle status PENDING/DONE, edit title, or reschedule)."""
     task = task_service.update_task(user_id=user_id, task_id=task_id, task_in=task_in)

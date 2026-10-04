@@ -9,7 +9,6 @@ from app.services.task_service import TaskService
 
 DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
-
 async def get_current_user_id(
     authorization: Optional[str] = Header(None),
     x_user_id: Optional[str] = Header(None),
@@ -38,36 +37,38 @@ async def get_current_user_id(
 
     return DEV_USER_ID
 
-
 def get_task_service(
     supabase: Client = Depends(get_supabase_client),
 ) -> TaskService:
     """Dependency provider for TaskService."""
     return TaskService(supabase)
 
-
 def get_embedding_service(
     supabase: Client = Depends(get_supabase_client),
-) -> "EmbeddingService":
-    """Dependency provider for EmbeddingService."""
+) -> Optional["EmbeddingService"]:
+    """Dependency provider for EmbeddingService.
+
+    Kembalikan None (bukan 500) bila GEMINI_API_KEY tidak dikonfigurasi,
+    agar CRUD tetap jalan di env tanpa embedding.
+    """
+    if not settings.GEMINI_API_KEY:
+        return None
     from app.services.embedding_service import EmbeddingService
     return EmbeddingService(supabase)
 
-
 def get_rag_service(
-    embedding_service: "EmbeddingService" = Depends(get_embedding_service),
-) -> "RAGService":
-    """Dependency provider for RAGService."""
+    embedding_service: Optional["EmbeddingService"] = Depends(get_embedding_service),
+) -> Optional["RAGService"]:
+    """Dependency provider for RAGService (None bila embedding mati)."""
+    if embedding_service is None:
+        return None
     from app.services.rag_service import RAGService
     return RAGService(embedding_service)
 
-
 def get_morning_brief_service(
     supabase: Client = Depends(get_supabase_client),
-    rag_service: "RAGService" = Depends(get_rag_service),
+    rag_service: Optional["RAGService"] = Depends(get_rag_service),
 ) -> "MorningBriefService":
     """Dependency provider for MorningBriefService."""
     from app.services.morning_brief_service import MorningBriefService
     return MorningBriefService(supabase, rag_service)
-
-

@@ -8,13 +8,17 @@ from uuid import UUID
 from supabase import Client
 
 from app.core.llm import get_batch_llm, get_realtime_llm
-from app.services.rag_service import RAGService
+from typing import Optional as _OptionalMB
+try:
+    from app.services.rag_service import RAGService
+except ImportError:
+    RAGService = None  # type: ignore
 
 logger = logging.getLogger(__name__)
 
 
 class MorningBriefService:
-    def __init__(self, supabase: Client, rag: RAGService):
+    def __init__(self, supabase: Client, rag: _OptionalMB["RAGService"] = None):
         self.supabase = supabase
         self.rag = rag
 
@@ -130,13 +134,15 @@ class MorningBriefService:
         scheduled_hours = scheduled_minutes / 60.0
         remaining_hours = max(0.0, capacity_hours - scheduled_hours)
 
-        # 4. RAG: Retrieve grounded context for AI note
+        # 4. RAG: Retrieve grounded context for AI note (opsional, jangan gagalkan brief)
         rag_query = f"ringkasan aktivitas dan kebiasaan tanggal {target_date.isoformat()}"
-        try:
-            rag_context = self.rag.retrieve_context_sync(user_id=user_id, query=rag_query, top_k=5)
-        except Exception as e:
-            logger.warning(f"RAG context retrieval failed for brief: {e}")
-            rag_context = ""
+        rag_context = ""
+        if self.rag is not None:
+            try:
+                rag_context = self.rag.retrieve_context_sync(user_id=user_id, query=rag_query, top_k=5)
+            except Exception as e:
+                logger.warning(f"RAG context retrieval failed for brief: {e}")
+                rag_context = ""
 
         # 5. Generate AI Note
         ai_note = self._generate_ai_note(
