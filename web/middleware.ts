@@ -2,11 +2,12 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
   // Lewati callback + aset statis agar tidak loop.
   if (
-    request.nextUrl.pathname.startsWith('/auth/callback') ||
-    request.nextUrl.pathname.startsWith('/_next') ||
-    request.nextUrl.pathname === '/favicon.ico'
+    pathname.startsWith('/auth/callback') ||
+    pathname.startsWith('/_next') ||
+    pathname === '/favicon.ico'
   ) {
     return NextResponse.next();
   }
@@ -33,8 +34,24 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
-  // Proteksi utama tetap di client (AuthGate) agar tidak memblokir prerender.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Belum login: semua halaman kecuali /login dilempar ke /login.
+  // Sudah login tapi buka /login: lempar ke /.
+  if (!user && pathname !== '/login') {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/login';
+    loginUrl.search = '';
+    return NextResponse.redirect(loginUrl);
+  }
+  if (user && pathname === '/login') {
+    const homeUrl = request.nextUrl.clone();
+    homeUrl.pathname = '/';
+    homeUrl.search = '';
+    return NextResponse.redirect(homeUrl);
+  }
   return response;
 }
 

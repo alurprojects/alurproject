@@ -1,13 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { PlannerHeader } from './components/planner/PlannerHeader';
 import { TaskItem } from './components/planner/TaskItem';
 import { TaskEditModal } from './components/planner/TaskEditModal';
 import { GoalPanel } from './components/planner/GoalPanel';
-import { AuthScreen } from './components/AuthScreen';
 import { PlannerTask, DayInfo, toPlannerTask } from './components/planner/types';
 import { api, Goal, Task } from '../lib/api';
 import { getSupabaseBrowser, persistAccessToken } from '../lib/supabase-browser';
@@ -38,8 +36,6 @@ const ENV_READY = Boolean(
 );
 
 function PlannerGate() {
-  const searchParams = useSearchParams();
-  const authError = searchParams.get('auth_error') === '1';
   const [authChecked, setAuthChecked] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [authEmail, setAuthEmail] = useState<string | null>(null);
@@ -306,7 +302,13 @@ function PlannerGate() {
   }
 
   if (!authed) {
-    return <AuthScreen envReady={ENV_READY} authError={authError} />;
+    // Biar middleware yang arahkan ke /login (hindari render ganda + loop).
+    // Tampilkan pesan netral saat cookie belum sinkron.
+    return (
+      <p className="px-6 py-10 text-sm text-alur-warmgray">
+        Mengalihkan ke halaman login...
+      </p>
+    );
   }
 
   return (
