@@ -1,5 +1,8 @@
 # Feedback — Status Resolusi B (260917)
 
+> [!NOTE]
+> **Superseded 2026-10-03:** B2 di bawah dinyatakan digantikan oleh `DEPLOYMENT_GUIDE.md` (Vercel Tahap 1 sampai VPS). Riwayat dipertahankan, keputusan resmi ikut deployment guide.
+
 **Tanggal:** 17 September 2026
 **Konteks:** Semua 6 temuan dari `feedback.md` versi sebelumnya (B1–B6) telah diselesaikan oleh `resolusi-B-260917.md`.
 
@@ -37,3 +40,5 @@
 ## Status Saat Ini
 
 Semua temuan audit telah ditindaklanjuti. Tidak ada lagi poin terbuka dari `resolusi-audit-260916.md` maupun `resolusi-B-260917.md`.
+
+> **Update 2026-10-03:** keputusan B2 (Render) digantikan — backend + web tetap Vercel Tahap 1 sampai langganan VPS. Pemicu pindah: `/chat/message`, `/internal/cron/reflection`, atau `POST /goals/{id}/plan` 504 konsisten.

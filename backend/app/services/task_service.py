@@ -149,6 +149,10 @@ class TaskService:
         if task_in.estimated_minutes is not None:
             update_data["estimated_minutes"] = task_in.estimated_minutes
             update_data["is_ambiguous"] = False
+        if task_in.goal_id is not None:
+            update_data["goal_id"] = str(task_in.goal_id)
+        elif "goal_id" in task_in.model_fields_set:
+            update_data["goal_id"] = None
 
         if not update_data:
             res = (

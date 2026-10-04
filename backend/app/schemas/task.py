@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 TaskStatus = Literal["PENDING", "DONE", "MISSED"]
-TaskSource = Literal["MANUAL", "BRAIN_DUMP", "CHAT_ROOM"]
+TaskSource = Literal["MANUAL", "BRAIN_DUMP", "CHAT_ROOM", "GOAL_PLAN"]
 MissedFollowUp = Literal["NONE", "PENDING", "FORGOT", "SKIPPED", "RESCHEDULED"]
 SuggestionStatus = Literal["PENDING", "ACCEPTED", "REJECTED"]
 
@@ -26,6 +26,7 @@ class TaskUpdate(BaseModel):
     assigned_date: Optional[date] = None
     status: Optional[TaskStatus] = None
     estimated_minutes: Optional[int] = Field(None, gt=0)
+    goal_id: Optional[UUID] = Field(None, description="Hubungkan/lepas goal. null = lepas.")
 
 
 class TaskClarifyRequest(BaseModel):

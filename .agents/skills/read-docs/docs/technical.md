@@ -21,7 +21,15 @@ Aplikasi ini menargetkan pengguna berusia 18-35 tahun yang membutuhkan produktiv
 | **Scheduled Jobs** | Supabase `pg_cron` + Edge Functions | Eksekusi *job* otomatis untuk *nightly reflection* dan *weekly planning*. |
 | **Voice-to-Text** *(Fase 3)* | Gemini Audio API / Whisper | Mendukung input *brain-dump* via suara di masa mendatang. |
 | **Google Calendar** *(Tahap B)* | OAuth 2.0 REST, `calendar.readonly` | Membaca *events* (*read-only*) untuk mengkalkulasi waktu kosong. |
-| **Deployment** | Vercel Free-Tier (Tahap 1) — fallback: Cloudflare Workers *[perlu verifikasi dukungan Python sebelum eksekusi]* → VPS berbayar (Tahap 3) | *Hosting* 100% Serverless. **Catatan:** Solusi sementara bertahap karena batas eksekusi Vercel 10 detik. |
+| **Deployment** | Vercel Free-Tier Tahap 1 (Backend FastAPI + Web Next.js) → VPS berbayar Tahap 2 | Keputusan 2026-10-03: tetap Vercel sementara sampai langganan VPS. Cloudflare Workers dicoret untuk backend Python. |
+
+---
+
+## 1a. Keputusan Deployment 2026-10-03 (Governing)
+
+- Backend + Web tetap di Vercel Hobby sampai pindah VPS. `feedback.md B2` (Render) dinyatakan superseded oleh `DEPLOYMENT_GUIDE.md`.
+- Pemicu pindah: `/chat/message`, `/internal/cron/reflection`, atau `POST /goals/{id}/plan` 504 konsisten.
+- Semua generate AI (Morning Brief, breakdown goal, refleksi) wajib async via cron + sajikan dari DB.
 
 ---
 
@@ -278,13 +286,14 @@ Mengeluarkan JSON terstruktur: `{ response_text, message_type, extracted_tasks[]
 
 ## 7. Environment & Secrets
 
-Variabel lingkungan (Environment Variables) yang perlu disiapkan di Backend & *deployment*:
-- `SUPABASE_URL` & `SUPABASE_KEY` (Anon / Service Role)
-- `GEMINI_API_KEY` (dan `GROQ_API_KEY` untuk *fallback*)
+Variabel lingkungan (Environment Variables) yang perlu disiapkan di Backend & *deployment* (nama persis mengikuti `backend/app/core/config.py` + `ENV_GUIDE.md`):
+- `PUBLIC_SUPABASE_URL` & `PUBLIC_SUPABASE_ANON_KEY` (boleh ke client)
+- `SUPABASE_SERVICE_ROLE_KEY` & `DATABASE_URL` (server-only, jangan ke client)
+- `GEMINI_API_KEY` (dan `GROQ_API_KEY` untuk *fallback* real-time <10 detik)
 - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` (Untuk OAuth & Calendar)
 - `COMPANION_SYSTEM_PROMPT` — *(Optional override)* untuk menyesuaikan pedoman inti AI persona.
 - `CHAT_CONTEXT_WINDOW_DAYS=7` — Batas waktu memori percakapan untuk *context window*.
-- `JWT_SECRET` (Sama dengan Supabase JWT Secret untuk verifikasi *bearer token*).
+- `BACKEND_ENV`, `BACKEND_HOST`, `BACKEND_PORT` (konfig server FastAPI)
 - `CRON_SECRET` — server-only, dipakai untuk validasi header `X-Cron-Secret` pada endpoint `/internal/cron/*`. Secret ini JUGA dipakai sebagai nilai `app.cron_secret` di `DATABASE.md` Section 11 (`pg_cron` → `net.http_post`) — satu secret yang sama, jangan generate dua nilai berbeda.
 
 ---

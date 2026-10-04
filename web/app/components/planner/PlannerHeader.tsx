@@ -1,38 +1,41 @@
 'use client';
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Sparkles, Inbox } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 
 interface PlannerHeaderProps {
   currentMonthYear: string;
   weekRangeText: string;
+  capacityLine: string | null;
+  isOverload: boolean;
   onPrevWeek: () => void;
   onNextWeek: () => void;
   onResetToday: () => void;
-  onOpenBrainDump: () => void;
-  onToggleSomeday: () => void;
-  isSomedayOpen: boolean;
-  somedayCount: number;
+  onOpenGoals: () => void;
+  goalsCount: number;
   totalWeekTasks: number;
   completedWeekTasks: number;
+  userEmail?: string | null;
+  onLogout?: () => void;
 }
 
 export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
   currentMonthYear,
   weekRangeText,
+  capacityLine,
+  isOverload,
   onPrevWeek,
   onNextWeek,
   onResetToday,
-  onOpenBrainDump,
-  onToggleSomeday,
-  isSomedayOpen,
-  somedayCount,
+  onOpenGoals,
+  goalsCount,
   totalWeekTasks,
   completedWeekTasks,
+  userEmail,
+  onLogout,
 }) => {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 py-5 px-6 border-b border-alur-border bg-alur-bg sticky top-0 z-20">
-      {/* Left: Month Year Display & Range */}
       <div className="flex items-baseline gap-3">
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-alur-ink font-title">
           {currentMonthYear}
@@ -42,9 +45,19 @@ export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
         </span>
       </div>
 
-      {/* Right Controls: Navigation & Actions */}
       <div className="flex items-center gap-3">
-        {/* Week Summary Badge */}
+        {capacityLine && (
+          <div
+            className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+              isOverload ? 'bg-red-50 text-alur-alert border border-alur-alert/30' : 'bg-alur-surface text-alur-charcoal'
+            }`}
+            title="Total estimasi tugas hari ini dibanding kapasitas harian"
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${isOverload ? 'bg-alur-alert' : 'bg-alur-ink'}`} />
+            <span>{capacityLine}</span>
+          </div>
+        )}
+
         {totalWeekTasks > 0 && (
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-alur-surface text-xs font-medium text-alur-charcoal">
             <span className="w-1.5 h-1.5 rounded-full bg-alur-ink" />
@@ -54,42 +67,16 @@ export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
           </div>
         )}
 
-        {/* Someday Drawer Trigger */}
         <button
           type="button"
-          onClick={onToggleSomeday}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${
-            isSomedayOpen
-              ? 'bg-alur-ink text-white border-alur-ink'
-              : 'bg-alur-surface/60 text-alur-charcoal border-alur-border hover:bg-alur-surface'
-          }`}
-          title="Tampilkan daftar Belum Terjadwal (Someday)"
-        >
-          <Inbox size={13} />
-          <span>Someday</span>
-          {somedayCount > 0 && (
-            <span
-              className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                isSomedayOpen ? 'bg-white text-alur-ink' : 'bg-alur-border text-alur-charcoal'
-              }`}
-            >
-              {somedayCount}
-            </span>
-          )}
-        </button>
-
-        {/* Brain Dump AI Button */}
-        <button
-          type="button"
-          onClick={onOpenBrainDump}
+          onClick={onOpenGoals}
           className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-full bg-alur-ink text-alur-bg hover:opacity-90 transition-opacity shadow-xs"
-          title="Tulis banyak tugas sekaligus atau curhat untuk diurai AI"
+          title="Kelola Goal — sumber Target Harian"
         >
-          <Sparkles size={13} />
-          <span>Brain-dump</span>
+          <Calendar size={13} />
+          <span>Goal{goalsCount > 0 ? ` (${goalsCount})` : ''}</span>
         </button>
 
-        {/* Week Navigation Buttons */}
         <div className="flex items-center rounded-full border border-alur-border bg-alur-surface/60 p-0.5">
           <button
             type="button"
@@ -116,6 +103,22 @@ export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
             <ChevronRight size={16} />
           </button>
         </div>
+
+        {userEmail && (
+          <div className="flex items-center gap-2">
+            <span className="hidden lg:inline max-w-[180px] truncate text-[11px] text-alur-warmgray" title={userEmail}>
+              {userEmail}
+            </span>
+            <button
+              type="button"
+              onClick={onLogout}
+              className="px-3 py-1.5 text-[11px] font-bold rounded-full border border-alur-border text-alur-warmgray hover:text-alur-charcoal hover:bg-alur-surface transition-colors"
+              title="Keluar"
+            >
+              Keluar
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
