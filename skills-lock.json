@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "ryux": {
+      "source": "ryuxdsgn/design-intelligence",
+      "sourceType": "github",
+      "skillPath": "skills/ryux/SKILL.md",
+      "computedHash": "cc0c989eea169c0f5338abeddb28b14e75a0c21949910ec2be97956c6190dc6e"
+    }
+  }
+}

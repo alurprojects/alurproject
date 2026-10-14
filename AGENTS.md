@@ -42,3 +42,12 @@
    - **Automation Contract**: Any agent that does (a)–(d) MUST also update today's `track-progress/YYYY-MM-DD.md`. If the file for today does not exist, create it from the template in `track-progress/2026-09-30.md`.
    - **Retention**: Logs are append-only per day; never delete past logs. Use new date file for new day.
    - **Opsional (Git Hook)**: Jika ingin otomatisasi, pasang `post-commit` hook yang mengingatkan (bukan memaksa) untuk cek `exec/` — jangan auto-generate log dari `git log` karena commit ≠ progress fitur.
+
+<!-- ryux-rules:start -->
+## RYUX
+
+RYUX is installed as one skill, `ryux`, in this project's agent skills folder. For UI, UX, copy, or
+frontend work, say what you are doing (analyze, design, build, critique, or QA); RYUX picks the
+knowledge it needs and ends with the Delivery Gate. Reference data and structured review come from
+the ryux MCP (hosted server not live yet; local: `claude mcp add --transport http ryux http://localhost:8787/mcp`).
+<!-- ryux-rules:end -->
