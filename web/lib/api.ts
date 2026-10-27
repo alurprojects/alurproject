@@ -95,24 +95,18 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
     const errorText = await response.text();
     throw new Error(`API Error ${response.status}: ${errorText.slice(0, 200)}`);
   }
-  // Backend misconfigured serves raw .py source (octet-stream) — surface clearly.
+  // Backend misconfigured serves raw .py source (octet-stream) — never show it.
+  // Log the head for debugging, throw a friendly message for the UI.
   if (!contentType.includes('application/json')) {
     const body = await response.text();
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(`API non-JSON (${contentType || 'unknown'}) at ${endpoint}. Head:`, body.slice(0, 120));
+    }
     throw new Error(
-      `API Error: backend returned non-JSON (${contentType || 'unknown'}). ` +
-        `Body head: ${body.slice(0, 120)}`
+      'Backend API tidak merespons dengan benar. Tunggu deploy Vercel selesai, lalu tekan Coba lagi.'
     );
   }
   return response.json();
-}
-
-function flattenWeek(week: WeekTasksResponse, goalMap: Map<string, string>): Task[] {
-  return week.days.flatMap((d) =>
-    d.tasks.map((t) => ({
-      ...t,
-      goal_title: t.goal_id ? goalMap.get(t.goal_id) || null : null,
-    }))
-  );
 }
 
 export const api = {
@@ -120,11 +114,6 @@ export const api = {
   getWeek: async (weekStart?: string): Promise<WeekTasksResponse> => {
     const query = weekStart ? `?week=${weekStart}` : '';
     return fetchAPI<WeekTasksResponse>(`/tasks${query}`);
-  },
-
-  getWeekFlat: async (weekStart: string | undefined, goals: Goal[]): Promise<Task[]> => {
-    const week = await api.getWeek(weekStart);
-    return flattenWeek(week, new Map(goals.map((g) => [g.id, g.title])));
   },
 
   createTask: async (title: string, assignedDate: string, estimatedMinutes?: number, goalId?: string): Promise<Task> => {

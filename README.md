@@ -56,16 +56,16 @@ Users interact purely through a simple To-do list and a Chat Room. The LangGraph
 
 ## Getting Started
 
-All active documentation is strictly located in the `_docs/running/` folder. 
+All active documentation is strictly located in the `.agents/skills/read-docs/docs/` folder.
 
-> ⚠️ **IMPORTANT:** Never read or use files from `_docs/archive/`. 
+> ⚠️ **IMPORTANT:** Never read or use files from `.agents/skills/read-docs/archive/`.
 
 To understand the system and start developing, read these in order:
-1. [`PRD.md`](./_docs/running/PRD.md) - Product requirements and UX rules.
-2. [`technical.md`](./_docs/running/technical.md) - API contracts and architecture.
-3. [`DATABASE.md`](./_docs/running/DATABASE.md) - Database schema and pg_cron jobs.
-4. [`mindmap.md`](./_docs/running/mindmap.md) - Visual system diagrams.
-5. [`ENV_GUIDE.md`](./_docs/running/ENV_GUIDE.md) - Local environment setup.
+1. [`PRD.md`](.agents/skills/read-docs/docs/PRD.md) - Product requirements and UX rules.
+2. [`technical.md`](.agents/skills/read-docs/docs/technical.md) - API contracts and architecture.
+3. [`DATABASE.md`](.agents/skills/read-docs/docs/DATABASE.md) - Database schema and pg_cron jobs.
+4. [`mindmap.md`](.agents/skills/read-docs/docs/mindmap.md) - Visual system diagrams.
+5. [`ENV_GUIDE.md`](.agents/skills/read-docs/docs/ENV_GUIDE.md) - Local environment setup.
 
 ---
 *Built to make you productive, but remind you to rest.*

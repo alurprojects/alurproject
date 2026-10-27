@@ -85,7 +85,6 @@ def test_send_chat_message_endpoint(mock_invoke):
     }
 
     payload = {"message": "besok beli domain baru 30 menit"}
-    headers = {"X-User-Id": str(TEST_USER_ID)}
 
     with patch("app.core.supabase.get_supabase_client") as mock_get_client:
         mock_supabase = MagicMock()
@@ -112,7 +111,7 @@ def test_send_chat_message_endpoint(mock_invoke):
         ]
         mock_get_client.return_value = mock_supabase
 
-        response = client.post("/chat/message", json=payload, headers=headers)
+        response = client.post("/chat/message", json=payload)
         assert response.status_code == 200
         data = response.json()
         assert data["message_type"] == "TASK_CAPTURE"
@@ -125,7 +124,6 @@ from app.core.supabase import get_supabase_client
 
 def test_get_chat_history_endpoint():
     """Test GET /chat/history returns conversation logs."""
-    headers = {"X-User-Id": str(TEST_USER_ID)}
     mock_logs = [
         {
             "id": str(uuid4()),
@@ -158,7 +156,7 @@ def test_get_chat_history_endpoint():
     app.dependency_overrides[get_supabase_client] = lambda: mock_supabase
 
     try:
-        response = client.get("/chat/history", headers=headers)
+        response = client.get("/chat/history")
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 2
@@ -170,7 +168,6 @@ def test_get_chat_history_endpoint():
 
 def test_retention_endpoints():
     """Test Data Retention: export, retention-override, and delete."""
-    headers = {"X-User-Id": str(TEST_USER_ID)}
     log_id = str(uuid4())
 
     mock_supabase = MagicMock()
@@ -191,7 +188,7 @@ def test_retention_endpoints():
     app.dependency_overrides[get_supabase_client] = lambda: mock_supabase
 
     try:
-        export_res = client.post("/chat/history/export", headers=headers)
+        export_res = client.post("/chat/history/export")
         assert export_res.status_code == 200
         export_data = export_res.json()
         assert export_data["total_messages"] == 1
@@ -204,7 +201,6 @@ def test_retention_endpoints():
         override_res = client.patch(
             "/chat/history/retention-override",
             json={"retention_override": True},
-            headers=headers,
         )
         assert override_res.status_code == 200
         assert override_res.json()["success"] is True
@@ -213,7 +209,7 @@ def test_retention_endpoints():
         mock_supabase.table.return_value.delete.return_value.eq.return_value.execute.return_value.data = [
             {"id": log_id}
         ]
-        delete_res = client.delete("/chat/history", headers=headers)
+        delete_res = client.delete("/chat/history")
         assert delete_res.status_code == 200
         assert delete_res.json()["success"] is True
         assert delete_res.json()["count"] == 1

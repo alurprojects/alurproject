@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PlannerHeader } from './components/planner/PlannerHeader';
 import { TaskItem } from './components/planner/TaskItem';
 import { TaskEditModal } from './components/planner/TaskEditModal';
@@ -54,6 +54,8 @@ function PlannerGate() {
   const today = useMemo(() => new Date(), []);
   const todayStr = useMemo(() => formatDateISO(today), [today]);
   const mondayStr = useMemo(() => formatDateISO(currentMonday), [currentMonday]);
+  // Mobile: satu hari tampil (default hari ini). Desktop: grid 7 kolom.
+  const [selectedDateStr, setSelectedDateStr] = useState(() => todayStr);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,7 +136,9 @@ function PlannerGate() {
       const raw = e instanceof Error ? e.message : 'Gagal memuat Target Harian';
       // Bedakan backend mati (500/FUNCTION_INVOCATION_FAILED) vs data kosong.
       // Jangan tampilkan pesan 500 sebagai empty state agar tidak membingungkan.
-      if (/500|FUNCTION_INVOCATION_FAILED|Failed to fetch|NetworkError/i.test(raw)) {
+      if (/401|Unauthorized|Missing or invalid Authorization/i.test(raw)) {
+        setError('Sesi berakhir atau belum login. Silakan login ulang lalu tekan Coba lagi.');
+      } else if (/500|FUNCTION_INVOCATION_FAILED|Failed to fetch|NetworkError/i.test(raw)) {
         setError(
           'Backend API tidak merespons (500). Tunggu deploy Vercel selesai, lalu tekan Coba lagi. Endpoint: /tasks.'
         );
@@ -204,7 +208,27 @@ function PlannerGate() {
     next.setDate(currentMonday.getDate() + 7);
     setCurrentMonday(next);
   };
-  const handleResetToday = () => setCurrentMonday(getMonday(new Date()));
+  const handleResetToday = () => {
+    setCurrentMonday(getMonday(new Date()));
+    setSelectedDateStr(formatDateISO(new Date()));
+  };
+
+  const selectedDay = useMemo(
+    () =>
+      weekDays.find((d) => d.dateStr === selectedDateStr) ??
+      weekDays.find((d) => d.isToday) ??
+      weekDays[0],
+    [weekDays, selectedDateStr]
+  );
+
+  const stepSelectedDay = (delta: number) => {
+    const d = new Date(selectedDay.dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    setSelectedDateStr(formatDateISO(d));
+    // Ikut geser minggu bila keluar dari minggu tampil.
+    if (delta < 0 && selectedDay.dateStr === weekDays[0].dateStr) handlePrevWeek();
+    if (delta > 0 && selectedDay.dateStr === weekDays[weekDays.length - 1].dateStr) handleNextWeek();
+  };
 
   const refreshTasks = useCallback(
     async (updated: Task) => {
@@ -363,7 +387,50 @@ function PlannerGate() {
               </button>
             </div>
           ) : null}
-          <div className="flex-1 overflow-x-auto min-h-[520px]">
+          <div className="flex-1 min-h-[520px] lg:hidden">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-alur-border">
+              <button
+                type="button"
+                onClick={() => stepSelectedDay(-1)}
+                className="p-2 rounded-full text-alur-warmgray hover:text-alur-charcoal hover:bg-alur-surface"
+                aria-label="Hari sebelumnya"
+              >
+                <ChevronLeft size={16} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentMonday(getMonday(new Date()));
+                  setSelectedDateStr(formatDateISO(new Date()));
+                }}
+                className="text-xs font-black tracking-wider uppercase"
+                aria-label="Lompat ke hari ini"
+              >
+                {selectedDay.dayName}, {selectedDay.dayNumber} {selectedDay.monthName}
+              </button>
+              <button
+                type="button"
+                onClick={() => stepSelectedDay(1)}
+                className="p-2 rounded-full text-alur-warmgray hover:text-alur-charcoal hover:bg-alur-surface"
+                aria-label="Hari berikutnya"
+              >
+                <ChevronRight size={16} aria-hidden="true" />
+              </button>
+            </div>
+            <DayColumnInline
+              day={selectedDay}
+              tasks={tasks.filter((t) => t.dateStr === selectedDay.dateStr)}
+              onAddTask={handleAddTask}
+              onToggleTask={handleToggleTask}
+              onOpenEdit={setEditingTask}
+              onDropTask={handleMoveToDate}
+              onClarify={(t) => {
+                setClarifyTask(t);
+                setClarifyMinutes('');
+              }}
+            />
+          </div>
+          <div className="flex-1 overflow-x-auto min-h-[520px] hidden lg:block">
             <div className="flex min-w-[1050px] w-full border-b border-alur-border">
               {weekDays.map((day) => (
                 <div key={day.dateStr} className="flex-1">

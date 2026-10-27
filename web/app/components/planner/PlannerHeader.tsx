@@ -73,7 +73,7 @@ export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
           className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-full bg-alur-ink text-alur-bg hover:opacity-90 transition-opacity shadow-xs"
           title="Kelola Goal — sumber Target Harian"
         >
-          <Calendar size={13} />
+          <Calendar size={13} aria-hidden="true" />
           <span>Goal{goalsCount > 0 ? ` (${goalsCount})` : ''}</span>
         </button>
 
@@ -83,8 +83,9 @@ export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
             onClick={onPrevWeek}
             className="p-1.5 hover:bg-alur-bg rounded-full text-alur-warmgray hover:text-alur-charcoal transition-colors"
             title="Minggu Sebelumnya"
+            aria-label="Minggu sebelumnya"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={16} aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -99,8 +100,9 @@ export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
             onClick={onNextWeek}
             className="p-1.5 hover:bg-alur-bg rounded-full text-alur-warmgray hover:text-alur-charcoal transition-colors"
             title="Minggu Berikutnya"
+            aria-label="Minggu berikutnya"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={16} aria-hidden="true" />
           </button>
         </div>
 

@@ -38,3 +38,5 @@ ios/.generated/
 Thumbs.db
 .vscode/
 .idea/
+
+opencode.json

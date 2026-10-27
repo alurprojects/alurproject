@@ -11,14 +11,13 @@ DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
 async def get_current_user_id(
     authorization: Optional[str] = Header(None),
-    x_user_id: Optional[str] = Header(None),
     supabase: Client = Depends(get_supabase_client),
 ) -> UUID:
     """Extract and validate the current user's ID from Supabase Auth JWT.
 
-    If a valid Bearer token is provided, extracts the authenticated user's ID.
-    Otherwise, supports X-User-Id or falls back to the seeded default user ID
-    (00000000-0000-0000-0000-000000000001) so the planner is immediately usable.
+    Requires a valid `Authorization: Bearer <supabase_jwt>` header.
+    shortcut: dev fallback to seeded user when BACKEND_ENV != production,
+    remove once local/mobile always send real JWTs.
     """
     if authorization and authorization.startswith("Bearer "):
         token = authorization.replace("Bearer ", "").strip()
@@ -29,13 +28,13 @@ async def get_current_user_id(
         except Exception:
             pass
 
-    if x_user_id:
-        try:
-            return UUID(x_user_id)
-        except ValueError:
-            pass
+    if settings.BACKEND_ENV != "production":
+        return DEV_USER_ID
 
-    return DEV_USER_ID
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Missing or invalid Authorization Bearer token",
+    )
 
 def get_task_service(
     supabase: Client = Depends(get_supabase_client),

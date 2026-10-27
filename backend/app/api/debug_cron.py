@@ -1,9 +1,9 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from uuid import UUID
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from supabase import Client
 
-from app.api.deps import DEV_USER_ID
+from app.api.deps import get_current_user_id
 from app.core.supabase import get_supabase_client
 from app.services.cron_service import CronService
 
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/debug", tags=["debug"])
 @router.api_route("/run-cron/{job_name}", methods=["GET", "POST"], response_model=Dict[str, Any])
 def trigger_cron_job(
     job_name: str,
-    x_user_id: Optional[str] = Header(None),
+    user_id: UUID = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase_client),
 ) -> Dict[str, Any]:
     """Manually or automatically trigger a background cron job via GET or POST.
@@ -24,12 +24,7 @@ def trigger_cron_job(
     - 'weekly-reflection'
     - 'all'
     """
-    target_user_id = DEV_USER_ID
-    if x_user_id:
-        try:
-            target_user_id = UUID(x_user_id)
-        except ValueError:
-            pass
+    target_user_id = user_id
 
     cron_service = CronService(supabase)
 

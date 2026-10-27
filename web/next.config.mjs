@@ -19,6 +19,11 @@ const nextConfig = {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   },
   async rewrites() {
+    // Fallback LOKAL: dipakai hanya saat browser memanggil /api/*, yaitu saat
+    // NEXT_PUBLIC_API_URL kosong (web/lib/api.ts -> BASE_URL '/api').
+    // - Lokal: BACKEND_API_URL=http://localhost:8000 (root .env, server-only, tanpa CORS).
+    // - Prod Vercel: set NEXT_PUBLIC_API_URL=https://api.alurproject.web.id di dashboard
+    //   project alur-web, browser langsung ke backend dan rewrite ini tidak terpakai.
     const backendUrl = process.env.BACKEND_API_URL || 'https://api.alurproject.web.id';
     return [
       {
