@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALUR · Arsitektur Saat Ini + Hotspot Audit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      /* Skin: ALUR DESIGN.md — paper #FAF9F7, ink #111111, surface #F0EFED,
+         muted #7A7772 (digelapkan ke #6B6862 untuk teks kecil agar 4.5:1),
+         accent Vermilion #FF5420 (stroke/fill saja, 3.06:1 non-teks),
+         accent-ink #C63A0F untuk teks beraksen (4.89:1). */
+      --color-paper:   #FAF9F7;
+      --color-surface: #F0EFED;
+      --color-ink:     #111111;
+      --color-muted:   #6B6862;
+      --color-soft:    #7A7772;
+      --color-rule:    rgba(17,17,17,0.12);
+      --color-accent:  #FF5420;
+      --color-accent-ink: #C63A0F;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1200px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--color-muted); margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-sans);
+      font-size: clamp(1.4rem, 2.2vw + 0.7rem, 1.9rem);
+      font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em;
+      line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 960px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Audit 2026-10-27</p>
+    <h1>ALUR — Arsitektur Saat Ini</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="alur-arch-current-title alur-arch-current-desc">
+        <title id="alur-arch-current-title">ALUR arsitektur saat ini dengan dua hotspot risiko</title>
+        <desc id="alur-arch-current-desc">Web dan mobile memanggil backend FastAPI di Vercel yang menulis ke Supabase dan memanggil Groq serta Gemini; dua chip risiko menandai fallback auth dev dan default CRON_SECRET.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6B6862"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#FAF9F7"/>
+
+        <!-- ============ ZONES (sebelum panah & node) ============ -->
+        <rect x="24" y="112" width="208" height="272" rx="8" fill="rgba(17,17,17,0.02)" stroke="rgba(17,17,17,0.10)" stroke-width="0.8"/>
+        <rect x="88" y="106" width="80" height="12" rx="2" fill="#FAF9F7"/>
+        <text x="128" y="115" fill="#6B6862" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">CLIENTS</text>
+
+        <rect x="288" y="96" width="240" height="336" rx="8" fill="rgba(17,17,17,0.02)" stroke="rgba(17,17,17,0.10)" stroke-width="0.8"/>
+        <rect x="348" y="90" width="120" height="12" rx="2" fill="#FAF9F7"/>
+        <text x="408" y="99" fill="#6B6862" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">BACKEND · VERCEL</text>
+
+        <rect x="584" y="96" width="352" height="336" rx="8" fill="rgba(17,17,17,0.02)" stroke="rgba(17,17,17,0.10)" stroke-width="0.8"/>
+        <rect x="696" y="90" width="128" height="12" rx="2" fill="#FAF9F7"/>
+        <text x="760" y="99" fill="#6B6862" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">DATA & PROVIDERS</text>
+
+        <!-- ============ ARROWS (sebelum node) ============ -->
+        <!-- cron-job.org -> api (dashed, scheduled) -->
+        <path d="M 408 56 V 152" fill="none" stroke="#6B6862" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+        <rect x="420" y="96" width="96" height="13" fill="#FAF9F7"/>
+        <text x="424" y="106" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.06em">X-CRON-SECRET</text>
+
+        <!-- web -> api -->
+        <path d="M 216 184 H 304" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="228" y="164" width="72" height="13" fill="#FAF9F7"/>
+        <text x="264" y="174" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">BEARER JWT</text>
+
+        <!-- mobile -> api -->
+        <path d="M 216 304 H 304" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="228" y="284" width="72" height="13" fill="#FAF9F7"/>
+        <text x="264" y="294" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">BEARER JWT</text>
+
+        <!-- api -> supabase -->
+        <path d="M 512 176 H 600" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="516" y="156" width="76" height="13" fill="#FAF9F7"/>
+        <text x="554" y="166" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SERVICE ROLE</text>
+
+        <!-- api -> groq (masuk edge atas) -->
+        <path d="M 512 240 H 660 Q 668 240 668 248 V 272" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="556" y="247" width="88" height="13" fill="#FAF9F7"/>
+        <text x="600" y="257" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">REALTIME CHAT</text>
+
+        <!-- api -> gemini (hop di atas jalur groq) -->
+        <path d="M 512 264 H 660 a 8 8 0 0 1 16 0 H 836 Q 844 264 844 272" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="516" y="271" width="80" height="13" fill="#FAF9F7"/>
+        <text x="556" y="281" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">BATCH+EMBED</text>
+
+        <!-- ============ NODES ============ -->
+        <!-- cron-job.org (eksternal) -->
+        <rect x="304" y="8" width="208" height="48" rx="6" fill="#F0EFED" stroke="rgba(17,17,17,0.18)" stroke-width="1"/>
+        <rect x="316" y="16" width="36" height="11" rx="2" fill="#FAF9F7" stroke="rgba(17,17,17,0.12)" stroke-width="0.6"/>
+        <text x="334" y="24.5" fill="#6B6862" font-size="5.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">CRON</text>
+        <text x="360" y="25" fill="#111111" font-size="11" font-family="'Inter', sans-serif" font-weight="600">cron-job.org</text>
+        <text x="316" y="44" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">NIGHTLY · WEEKLY · EKSTERNAL</text>
+
+        <!-- web -->
+        <rect x="40" y="168" width="176" height="64" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <rect x="52" y="176" width="30" height="11" rx="2" fill="#F0EFED"/>
+        <text x="67" y="184.5" fill="#6B6862" font-size="5.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">WEB</text>
+        <text x="90" y="185" fill="#111111" font-size="11" font-family="'Inter', sans-serif" font-weight="600">Next.js 14</text>
+        <text x="52" y="204" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">VERCEL · JWT DI LOCALSTORAGE</text>
+        <text x="52" y="218" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">TODO · CALENDAR · CHAT</text>
+
+        <!-- mobile -->
+        <rect x="40" y="272" width="176" height="64" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <rect x="52" y="280" width="46" height="11" rx="2" fill="#F0EFED"/>
+        <text x="75" y="288.5" fill="#6B6862" font-size="5.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">MOBILE</text>
+        <text x="106" y="289" fill="#111111" font-size="11" font-family="'Inter', sans-serif" font-weight="600">Flutter</text>
+        <text x="52" y="308" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">IOS · ANDROID · JWT SESSION</text>
+        <text x="52" y="322" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">SUPABASE_FLTTER SDK</text>
+
+        <!-- api (focal host) -->
+        <rect x="304" y="152" width="208" height="184" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <rect x="316" y="160" width="24" height="11" rx="2" fill="#F0EFED"/>
+        <text x="328" y="168.5" fill="#6B6862" font-size="5.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">API</text>
+        <text x="348" y="169" fill="#111111" font-size="11" font-family="'Inter', sans-serif" font-weight="600">FastAPI</text>
+        <text x="316" y="190" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">/TASKS /GOALS /CHAT /BRAIN-DUMP</text>
+        <text x="316" y="204" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">/USERS /INSIGHTS /BRIEF</text>
+        <text x="316" y="218" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">/INTERNAL/CRON/* /DEBUG/*</text>
+        <line x1="316" y1="230" x2="500" y2="230" stroke="rgba(17,17,17,0.12)" stroke-width="0.8"/>
+        <text x="316" y="246" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">LANGGRAPH:</text>
+        <text x="316" y="260" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">companion → extractor →</text>
+        <text x="316" y="274" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">scheduler → respond</text>
+        <text x="316" y="296" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">AUTH: get_current_user_id</text>
+        <text x="316" y="310" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">PER ENDPOINT (SERVICE ROLE)</text>
+
+        <!-- risk chip A -->
+        <rect x="304" y="356" width="208" height="28" rx="4" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1"/>
+        <rect x="312" y="364" width="30" height="12" rx="2" fill="#C63A0F"/>
+        <text x="327" y="373" fill="#FAF9F7" font-size="6" font-family="'Geist Mono', monospace" font-weight="600" text-anchor="middle" letter-spacing="0.08em">RISK</text>
+        <text x="350" y="373" fill="#C63A0F" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">DEV-FALLBACK AUTH · deps.py:31</text>
+
+        <!-- risk chip B -->
+        <rect x="304" y="392" width="208" height="28" rx="4" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1"/>
+        <rect x="312" y="400" width="30" height="12" rx="2" fill="#C63A0F"/>
+        <text x="327" y="409" fill="#FAF9F7" font-size="6" font-family="'Geist Mono', monospace" font-weight="600" text-anchor="middle" letter-spacing="0.08em">RISK</text>
+        <text x="350" y="409" fill="#C63A0F" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">DEFAULT CRON SECRET · config.py:24</text>
+
+        <!-- supabase (store) -->
+        <rect x="600" y="152" width="320" height="72" rx="6" fill="#F0EFED" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <rect x="612" y="160" width="24" height="11" rx="2" fill="#FAF9F7" stroke="rgba(17,17,17,0.12)" stroke-width="0.6"/>
+        <text x="624" y="168.5" fill="#6B6862" font-size="5.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">DB</text>
+        <text x="644" y="169" fill="#111111" font-size="11" font-family="'Inter', sans-serif" font-weight="600">Supabase Postgres</text>
+        <text x="612" y="192" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">RLS · PGVECTOR (EMBEDDINGS) · AUTH</text>
+        <text x="612" y="206" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">TASKS · GOALS · CONVERSATION_LOGS</text>
+        <text x="612" y="216" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">AI_INSIGHTS · MORNING_BRIEFS</text>
+
+        <!-- groq -->
+        <rect x="600" y="272" width="152" height="56" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <rect x="612" y="280" width="28" height="11" rx="2" fill="#F0EFED"/>
+        <text x="626" y="288.5" fill="#6B6862" font-size="5.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">LLM</text>
+        <text x="648" y="289" fill="#111111" font-size="11" font-family="'Inter', sans-serif" font-weight="600">Groq</text>
+        <text x="612" y="308" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">LLAMA-3.3-70B · REALTIME</text>
+        <text x="612" y="320" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">FALLBACK BATCH</text>
+
+        <!-- gemini -->
+        <rect x="768" y="272" width="152" height="56" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <rect x="780" y="280" width="28" height="11" rx="2" fill="#F0EFED"/>
+        <text x="794" y="288.5" fill="#6B6862" font-size="5.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">LLM</text>
+        <text x="816" y="289" fill="#111111" font-size="11" font-family="'Inter', sans-serif" font-weight="600">Gemini</text>
+        <text x="780" y="308" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">1.5-FLASH · BATCH/CRON</text>
+        <text x="780" y="320" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">TEXT-EMBEDDING-004</text>
+
+        <!-- ============ CALLOUT ============ -->
+        <line x1="584" y1="452" x2="584" y2="512" stroke="rgba(17,17,17,0.15)" stroke-width="1"/>
+        <text x="596" y="468" fill="#6B6862" font-size="9.5" font-family="'Inter', sans-serif" font-style="italic">
+          <tspan x="596">Catatan audit: backend memakai service-role key —</tspan>
+          <tspan x="596" dy="14">RLS Postgres dilewati. Keamanan data bergantung</tspan>
+          <tspan x="596" dy="14">penuh pada get_current_user_id di tiap endpoint;</tspan>
+          <tspan x="596" dy="14">fallback dev membuatinya bisa luruh diam-diam.</tspan>
+        </text>
+
+        <!-- ============ LEGEND ============ -->
+        <line x1="140" y1="560" x2="172" y2="560" stroke="#6B6862" stroke-width="1.2"/>
+        <text x="180" y="563" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">HTTPS / SDK</text>
+
+        <line x1="300" y1="560" x2="332" y2="560" stroke="#6B6862" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="340" y="563" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">SCHEDULED</text>
+
+        <rect x="452" y="554" width="28" height="12" rx="2" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1"/>
+        <text x="488" y="563" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">RISK (TEMUAN AUDIT)</text>
+
+        <rect x="688" y="554" width="28" height="12" rx="2" fill="rgba(17,17,17,0.02)" stroke="rgba(17,17,17,0.10)" stroke-width="0.8"/>
+        <text x="724" y="563" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">TIER / ZONA</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

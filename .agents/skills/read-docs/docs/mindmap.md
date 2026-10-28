@@ -16,7 +16,7 @@ Dokumen ini memuat rangkuman visual ALUR: **apa yang dibangun, bentuknya seperti
 | **Masalah P1** | Bingung prioritas tiap pagi → **Morning Brief Top 3** + **Capacity Warning** |
 | **Masalah P2** | To-do jarang tuntas → **Nightly MISSED** + **Saran Reschedule 1-tap** (dengan persetujuan, bukan auto-pindah) |
 | **Masalah P3** | Tidak paham pola sendiri → **Insight Mingguan naratif** (combined `tasks` + `conversation_logs`) |
-| **Bentuk Mobile** | Flutter — 4 tab: **To-do** (Daily Focus/Weekly) · **Chat Room** (brain-dump & curhat) · **Calendar** (time-block read-only) · **Profile** (goals & retensi) |
+| **Bentuk Mobile** | Flutter — 3 tab menu: **Home** (Daily overview & Morning Brief) · **To Do List** (Hybrid Daily Focus/Weekly) · **Chat** (brain-dump & curhat) + **Top-Right Profile** (goals & retensi). Calendar: on-hold. |
 | **Bentuk Web** | Next.js — **WeekGrid 7 kolom + Someday Drawer + BrainDumpModal + TaskEditModal**, scope v1: To-do + Calendar saja (`PRD §3.6`) |
 | **Bentuk Backend** | FastAPI + LangGraph (5 agent) + Supabase (Postgres + RLS + `pg_cron` + pgvector) |
 | **Prinsip** | *Invisible Complexity* — UI sesederhana kertas, kecerdasan di backend. *FORGOT vs SKIPPED* — bedakan lupa vs sengaja. |
@@ -43,7 +43,7 @@ flowchart LR
 
     Plat["Platform Integration"]
     Root --> Plat
-    Plat --> P1["Mobile (Flutter) — 4-tab, MorningBriefBanner ✅"]
+    Plat --> P1["Mobile (Flutter) — 3-tab (Home/To-do/Chat) + Top-Right Profile ✅"]
     Plat --> P2["Web (Next.js) — WeekGrid/Someday/BrainDump ⚠️ localStorage mock"]
     Plat --> P3["Backend (FastAPI + LangGraph) ✅"]
     Plat --> P4["DB, Auth, pg_cron, pgvector (Supabase) ✅ 012-016"]
@@ -75,7 +75,7 @@ Menambahkan **RAG retrieval**, **Hierarchical Memory**, dan **Morning Brief cron
 ```mermaid
 flowchart TD
     User(["User"])
-    Client["Client App<br/>(Mobile 4-tab / Web WeekGrid)"]
+    Client["Client App<br/>(Mobile 3-tab / Web WeekGrid)"]
     API["FastAPI Backend"]
     DB[("Supabase DB<br/>tasks, conversation_logs,<br/>embeddings, morning_briefs,<br/>ai_insights")]
     Cron["pg_cron (Supabase)"]

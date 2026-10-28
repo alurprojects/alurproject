@@ -33,6 +33,7 @@ class ChatRoomScreen extends StatefulWidget {
   final String? initialPrompt;
   final ApiService? apiService;
   final VoidCallback? onTasksCreated;
+  final VoidCallback? onOpenProfile;
 
   const ChatRoomScreen({
     super.key,
@@ -40,6 +41,7 @@ class ChatRoomScreen extends StatefulWidget {
     this.initialPrompt,
     this.apiService,
     this.onTasksCreated,
+    this.onOpenProfile,
   });
 
   @override
@@ -336,6 +338,28 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ),
           ],
         ),
+        actions: [
+          if (widget.onOpenProfile != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: GestureDetector(
+                onTap: widget.onOpenProfile,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkSurface : AppColors.paperGray,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: isDark ? AppColors.darkBorder : AppColors.hairlineGray),
+                  ),
+                  child: Icon(Icons.person_outline_rounded,
+                      size: 17, color: primaryTextColor),
+                ),
+              ),
+            ),
+        ],
       ),
       body: SafeArea(
         child: Column(

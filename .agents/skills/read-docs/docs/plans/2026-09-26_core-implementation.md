@@ -19,26 +19,26 @@ Fokus: Setup environment, Auth Google OAuth, struktur navigasi 4-Tab, UI Hybrid 
 
 ### 1.2. Navigasi & Layout Utama
 
-- [x] Buat `MainScreen` dengan `BottomNavigationBar` 4-Tab (To-do, Chat Room, Calendar, Profile).
+- [x] Buat `MainScreen` dengan `BottomNavigationBar` 3-Tab (Home, To Do List, Chat) dan Profile di pojok kanan atas (Top-Right Action). Calendar dialihkan ke status on-hold.
 - [x] Pastikan navigasi antar tab berjalan mulus dengan state yang tersimpan.
 
-### 1.3. Tab 1: To-do (Hybrid View)
+### 1.3. Tab To Do List (Hybrid View)
 
 - [x] Implementasikan **Daily Focus View** (Tampilan default, hanya hari ini).
 - [x] Tambahkan fitur *swipe* kiri/kanan untuk berpindah hari pada Daily Focus.
 - [x] Tambahkan tombol *toggle* untuk beralih ke **Weekly Overview** (Accordion Mon-Sun).
 - [x] Integrasikan `TaskRow` dan fungsi centang manual (CRUD status ke database).
 
-### 1.4. Tab 2: Chat Room (UI Shell)
+### 1.4. Tab Chat (UI Shell)
 
 - [x] Bangun antarmuka Chat Room sederhana (bubble chat user & AI).
 - [x] Buat input teks di bagian bawah dan integrasikan akses cepat *brain-dump* dari tab To-do.
 - [x] *(Mock)* Buat fungsi agar pesan user muncul di layar (belum terhubung ke backend).
 
-### 1.5. Tab 3 & 4: Calendar & Profile
+### 1.5. Profile (Top-Right Action) & Calendar (On-Hold)
 
-- [x] Buat UI statis untuk Calendar (Time-block grid 06:00 - 22:00, Read-Only).
-- [x] Buat halaman Profile menampilkan informasi user dan setting standar (theme, timezone, daily_capacity_hours).
+- [x] Buat halaman Profile menampilkan informasi user dan setting standar (theme, timezone, daily_capacity_hours) yang diakses via avatar di pojok kanan atas.
+- [x] Calendar (time-block grid) dialihkan ke status On-Hold pada bottom bar mobile v1.
 - [x] **Data Retention UI (Profile):** Implementasikan *Notice Banner* jika ada chat yang berstatus *pending-deletion* (>83 hari).
 - [x] **Data Retention UI (Profile):** Sediakan opsi: [Unduh Backup] (JSON), [Simpan Selamanya], dan tombol destruktif "Hapus Riwayat Chat" dengan konfirmasi 2-langkah.
 
@@ -95,4 +95,6 @@ Fokus: Refleksi otomatis, penjadwalan ulang, perlindungan data, dan tuning kepri
 
 notes:
 1. berdasarkan psikologi user, maksudnya user bisa konsultasi tentang masalahnya kenapa kok to do list nya selalu menumpuk, lalu AI akan memberikan solusi berdasarkan insight dari Reflection Agent. Nantinya bisa menjadi bahan pertimbangan AI untuk memberikan solusi yang lebih baik.
-2. 
+
+## Changelog
+- **2026-10-28 (v2)**: Navigasi mobile disesuaikan menjadi 3-tab (Home, To Do List, Chat). Calendar dialihkan ke status On-Hold, dan akses Profile dipindahkan ke Top-Right Action.

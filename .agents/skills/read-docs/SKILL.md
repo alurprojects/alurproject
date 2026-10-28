@@ -23,8 +23,8 @@ Pilih dokumen yang tepat sesuai konteks pekerjaan yang sedang dikerjakan:
 
 | Kebutuhan / Konteks Tugas | Target Dokumen di `.agents/skills/read-docs/docs/` | Bagian Kunci yang Perlu Dilihat |
 | :--- | :--- | :--- |
-| **Visi Produk, Positioning, Core Concept, UX Spec, Data Model** | [`PRD.md`](./../../.agents/skills/read-docs/docs/PRD.md) | • §1 (Visi & Positioning)<br>• §2 (Core Concept: Realistic Planner + AI Companion)<br>• §3 (UI/UX: 4-Tab, Hybrid To-do, Chat Room, Web Scope)<br>• §4 (Data Model) |
-| **Design System, Warna, Tipografi, Komponen UI, Layout, Tema** | [`DESIGN.md`](./../../.agents/skills/read-docs/docs/DESIGN.md) | • §2 (Color Palette: Warm Off-White, Ink Black, Paper Gray)<br>• §3 (Typography: Inter, H1 uppercase extra-bold, spacing)<br>• §4 (Components: Day Header, Day Strip, Task Row, Chat Room)<br>• §6 (CONST constraints) |
+| **Visi Produk, Positioning, Core Concept, UX Spec, Data Model** | [`PRD.md`](./../../.agents/skills/read-docs/docs/PRD.md) | • §1 (Visi & Positioning)<br>• §2 (Core Concept: Realistic Planner + AI Companion)<br>• §3 (UI/UX: 3-Tab + Profile top-right, Home, Hybrid To-do, Chat, Web Scope)<br>• §4 (Data Model) |
+| **Design System, Warna, Tipografi, Komponen UI, Layout, Tema** | [`DESIGN.md`](./../../.agents/skills/read-docs/docs/DESIGN.md) | • §2 (Palette: dark default `#0A0A0A` + mapping light, accent `#FF5420`)<br>• §3 (Typography: Inter, H1 uppercase extra-bold, spacing)<br>• §4 (Components: Day Header, Task Row, Bottom Nav 3 tab, Chat Room)<br>• §6 (CONST constraints) |
 | **Spesifikasi Otentikasi, Sketsa UI Login/SignUp, Alur Auth** | [`auth.md`](./../../.agents/skills/read-docs/docs/auth.md) | • §1 (Metode: Email+Password & Google OAuth)<br>• §2 (Alur Supabase Auth & JWT)<br>• §3 (Sketsa UI Login & SignUp, Form Styling) |
 | **Tech Stack, API Endpoint, LangGraph Architecture, Companion Agent** | [`technical.md`](./../../.agents/skills/read-docs/docs/technical.md) | • §1-2 (Stack & Architecture diagram)<br>• §4 (API Contract: /chat/message, /tasks, /internal/cron)<br>• §5 (LangGraph Pipeline & Conditional Routing)<br>• §6 (Companion Agent 2-Tone: HONEST/GENTLE) |
 | **Konfigurasi Environment Global, Kredensial, Setup .env** | [`ENV_GUIDE.md`](./../../.agents/skills/read-docs/docs/ENV_GUIDE.md) | • §2 (Konvensi `PUBLIC_*` vs Server-only)<br>• §3 (Integrasi FastAPI, Next.js, Flutter `.env.client`)<br>• §4 (Menambah variabel baru) |
@@ -65,10 +65,10 @@ Saat membaca docs dan menghasilkan solusi/kode, pastikan selalu patuh:
    - AI hanya saran: *"AI sarankan pindah ke [Hari] · [Terima] [Abaikan]"*
 4. **Hybrid To-Do**:
    - Default: Daily Focus (hari ini). Toggle: Weekly accordion (Mon-Sun).
-5. **4-Tab Navigation**:
-   - To-do, Chat Room, Calendar (read-only), Profile
+5. **3-Tab Navigation**:
+   - Home, To Do List, Chat. Profile = ikon pojok kanan atas. Calendar on-hold (mobile v1).
 6. **AI Adaptive Personality**:
    - Companion Agent menyesuaikan nada (WARM/HONEST/MINIMAL/ENCOURAGING) berdasarkan mood, completion rate, dan konteks.
 7. **Design Restraint**:
    - Flat design: tanpa shadow, tanpa gradient (kecuali stepped day cascade).
-   - Font: Inter. Accent: Vermilion Orange (#FF5420) hanya untuk task done.
+   - Font: Inter. Accent: Vermilion Orange (#FF5420) terbatas — FAB, tab aktif, centang selesai, satu frasa per layar.

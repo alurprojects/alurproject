@@ -119,11 +119,12 @@ alur/
 │   │   ├── services/
 │   │   ├── screens/
 │   │   │   ├── auth/
-│   │   │   ├── todo/       # Hybrid Daily/Weekly view
+│   │   │   ├── home/       # Home dashboard (Morning Brief banner & kapasitas harian)
+│   │   │   ├── todo/       # To Do List: Hybrid Daily/Weekly view
 │   │   │   ├── chat/       # Chat Room interface
-│   │   │   ├── calendar/
-│   │   │   ├── profile/
-│   │   │   └── main_screen.dart
+│   │   │   ├── calendar/   # Calendar time-block (On-hold di nav mobile v1)
+│   │   │   ├── profile/    # Profile & settings (dibuka via top-right action)
+│   │   │   └── main_screen.dart # 3-tab bottom nav + top-right profile
 │   │   └── widgets/
 │   └── pubspec.yaml
 ├── web/                    # Frontend Next.js (Scope awal: To-do + Calendar ONLY)
@@ -309,8 +310,8 @@ Strategi pengujian difokuskan pada ketepatan orkestrasi AI dan pengalaman penggu
 - **Chat Room Integration:** Uji alur penuh: `Kirim Pesan` → `Klasifikasi` → `Ekstraksi` → `Penjadwalan`.
 
 **Frontend / Mobile:**
-- Uji *Flutter Widgets* untuk 4 Tab utama: To-do, Chat, Calendar, Profile.
-- Uji fitur *Hybrid View* (Daily/Weekly) di halaman To-do.
+- Uji *Flutter Widgets* untuk 3 Tab utama: Home, To Do List, Chat, serta Profile (Top-Right Action).
+- Uji fitur *Hybrid View* (Daily/Weekly) di halaman To Do List.
 
 **End-to-End (E2E):**
 - Pengguna mengirim pesan "*Besok aku harus beli susu dan ngerjain laporan*".

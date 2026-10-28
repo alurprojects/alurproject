@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALUR · Alur Aplikasi: Login sampai Task Terjadwal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      /* Skin: ALUR DESIGN.md — paper #FAF9F7, ink #111111, accent #FF5420 (stroke),
+         accent-ink #C63A0F (teks aksen), muted #6B6862 (teks, 4.5:1). */
+      --color-paper:   #FAF9F7;
+      --color-surface: #F0EFED;
+      --color-ink:     #111111;
+      --color-muted:   #6B6862;
+      --color-accent:  #FF5420;
+      --color-accent-ink: #C63A0F;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1400px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--color-muted); margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-sans);
+      font-size: clamp(1.4rem, 2.2vw + 0.7rem, 1.9rem);
+      font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em;
+      line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 1280px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Flowchart · Alur Pengguna</p>
+    <h1>ALUR — Dari Login sampai Task Terjadwal</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="alur-flow-title alur-flow-desc">
+        <title id="alur-flow-title">Alur aplikasi ALUR dari login sampai task terjadwal</title>
+        <desc id="alur-flow-desc">Pengguna login lewat email atau Google, menambah data lewat form manual atau Chat Room, AI memilah dan menjadwalkan, lalu keputusan pindah hari selalu di tangan user.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6B6862"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#FAF9F7"/>
+
+        <!-- ============ ARROWS (sebelum node) ============ -->
+        <!-- start -> login? -->
+        <path d="M 480 80 V 112" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- login? -> login (TIDAK) -->
+        <path d="M 576 152 H 752" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="600" y="159" width="44" height="13" fill="#FAF9F7"/>
+        <text x="622" y="169" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TIDAK</text>
+
+        <!-- login -> home (JWT sesi) -->
+        <path d="M 864 192 V 216 Q 864 224 856 224 H 512 Q 504 224 504 232 V 248" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="560" y="231" width="68" height="13" fill="#FAF9F7"/>
+        <text x="594" y="241" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">JWT SESI</text>
+
+        <!-- login? -> home (YA) -->
+        <path d="M 480 192 V 248" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="488" y="210" width="32" height="13" fill="#FAF9F7"/>
+        <text x="504" y="220" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YA</text>
+
+        <!-- home -> input? -->
+        <path d="M 480 320 V 376" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="488" y="338" width="92" height="13" fill="#FAF9F7"/>
+        <text x="534" y="348" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TAMBAH DATA</text>
+
+        <!-- input? -> manual (MANUAL) -->
+        <path d="M 384 416 H 340 Q 332 416 332 424 V 556 Q 332 564 324 564 H 328" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="338" y="480" width="48" height="13" fill="#FAF9F7"/>
+        <text x="362" y="490" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">MANUAL</text>
+
+        <!-- input? -> chat (CHAT·DUMP) -->
+        <path d="M 480 456 V 520" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="488" y="478" width="80" height="13" fill="#FAF9F7"/>
+        <text x="528" y="488" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CHAT·DUMP</text>
+
+        <!-- manual -> saved -->
+        <path d="M 212 528 V 504 Q 212 496 220 496 H 692 Q 700 496 700 504 V 528" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="304" y="503" width="48" height="13" fill="#FAF9F7"/>
+        <text x="328" y="513" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SIMPAN</text>
+
+        <!-- chat -> saved -->
+        <path d="M 584 568 H 664" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="600" y="575" width="48" height="13" fill="#FAF9F7"/>
+        <text x="624" y="585" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SIMPAN</text>
+
+        <!-- saved -> saran? -->
+        <path d="M 896 564 H 928 Q 936 564 936 556 V 424 Q 936 416 944 416 H 960" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="942" y="480" width="100" height="13" fill="#FAF9F7"/>
+        <text x="992" y="490" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CEK KAPASITAS</text>
+
+        <!-- saran? -> home (TERIMA) -->
+        <path d="M 1056 456 V 632 Q 1056 640 1064 640 H 1192 Q 1200 640 1200 632 V 292 Q 1200 284 1192 284 H 592" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="1132" y="460" width="60" height="13" fill="#FAF9F7"/>
+        <text x="1162" y="470" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TERIMA</text>
+
+        <!-- saran? -> home (ABAIKAN) -->
+        <path d="M 960 416 H 624 Q 616 416 616 408 V 308 Q 616 300 608 300 H 592" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="700" y="423" width="64" height="13" fill="#FAF9F7"/>
+        <text x="732" y="433" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">ABAIKAN</text>
+
+        <!-- ============ NODES ============ -->
+        <!-- start oval -->
+        <rect x="392" y="40" width="176" height="40" rx="20" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="480" y="65" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600" text-anchor="middle">Buka ALUR</text>
+
+        <!-- d1: sudah login? -->
+        <polygon points="480,112 576,152 480,192 384,152" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="480" y="149" fill="#111111" font-size="9.5" font-family="'Inter', sans-serif" font-weight="600" text-anchor="middle">Sudah</text>
+        <text x="480" y="161" fill="#111111" font-size="9.5" font-family="'Inter', sans-serif" font-weight="600" text-anchor="middle">login?</text>
+
+        <!-- login -->
+        <rect x="752" y="120" width="224" height="72" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="764" y="146" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600">Login / Sign up</text>
+        <text x="764" y="166" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">EMAIL+PASSWORD · GOOGLE OAUTH</text>
+        <text x="764" y="180" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">SUPABASE AUTH · JWT SESI</text>
+
+        <!-- home -->
+        <rect x="368" y="248" width="224" height="72" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="380" y="274" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600">Home · 4 Tab</text>
+        <text x="380" y="294" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">TO-DO · CHAT · CALENDAR · PROFILE</text>
+        <text x="380" y="308" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">SARAN AI MUNCUL BILA OVERLOAD</text>
+
+        <!-- d2: input lewat mana? -->
+        <polygon points="480,376 576,416 480,456 384,416" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="480" y="413" fill="#111111" font-size="9.5" font-family="'Inter', sans-serif" font-weight="600" text-anchor="middle">Input lewat</text>
+        <text x="480" y="425" fill="#111111" font-size="9.5" font-family="'Inter', sans-serif" font-weight="600" text-anchor="middle">mana?</text>
+
+        <!-- manual -->
+        <rect x="96" y="528" width="232" height="72" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="108" y="554" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600">Form Task Manual</text>
+        <text x="108" y="574" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">JUDUL · TANGGAL · DURASI</text>
+        <text x="108" y="588" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">DURASI KOSONG = AMBIGU (?)</text>
+
+        <!-- chat -->
+        <rect x="376" y="520" width="208" height="96" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="388" y="546" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600">Chat Room</text>
+        <text x="388" y="566" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">BRAIN-DUMP · CURHAT · NUGAS</text>
+        <text x="388" y="582" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">COMPANION PILAH: TASK ·</text>
+        <text x="388" y="596" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">REFLEKSI · KAPASITAS</text>
+
+        <!-- saved -->
+        <rect x="664" y="528" width="232" height="72" rx="6" fill="#F0EFED" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="676" y="554" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600">Task tersimpan</text>
+        <text x="676" y="574" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">PENDING · AMBIGU (?) · SARAN</text>
+        <text x="676" y="588" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">MUNCUL DI TO-DO HARI INI</text>
+
+        <!-- d3: terima saran AI? (keputusan kunci / DCDC) -->
+        <polygon points="1056,376 1152,416 1056,456 960,416" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+        <text x="1056" y="411" fill="#111111" font-size="9.5" font-family="'Inter', sans-serif" font-weight="600" text-anchor="middle">Terima saran</text>
+        <text x="1056" y="423" fill="#111111" font-size="9.5" font-family="'Inter', sans-serif" font-weight="600" text-anchor="middle">pindah hari?</text>
+
+        <!-- ============ LEGEND ============ -->
+        <rect x="96" y="684" width="28" height="14" rx="3" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="132" y="694" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">LANGKAH</text>
+
+        <polygon points="316,684 330,691 316,698 302,691" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="344" y="694" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">KEPUTUSAN</text>
+
+        <rect x="480" y="684" width="28" height="14" rx="7" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="516" y="694" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">MULAI</text>
+
+        <polygon points="764,684 778,691 764,698 750,691" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+        <text x="792" y="694" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">KEPUTUSAN KUNCI (DCDC)</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

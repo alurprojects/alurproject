@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALUR · Home: Isi 4 Tab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      /* Skin: ALUR DESIGN.md — paper #FAF9F7, ink #111111, accent #FF5420 (stroke),
+         accent-ink #C63A0F (teks aksen), muted #6B6862 (teks, 4.5:1). */
+      --color-paper:   #FAF9F7;
+      --color-surface: #F0EFED;
+      --color-ink:     #111111;
+      --color-muted:   #6B6862;
+      --color-accent:  #FF5420;
+      --color-accent-ink: #C63A0F;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1080px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--color-muted); margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-sans);
+      font-size: clamp(1.4rem, 2.2vw + 0.7rem, 1.9rem);
+      font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em;
+      line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 960px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Tree · Detail Home 4 Tab</p>
+    <h1>ALUR — Home: Isi 4 Tab</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="home-4-tab-title home-4-tab-desc">
+        <title id="home-4-tab-title">Home ALUR: isi 4 tab utama</title>
+        <desc id="home-4-tab-desc">Peta detail empat tab layar Home ALUR — To-do, Chat Room, Calendar, Profile — beserta isi, tindakan, dan arah aliran datanya.</desc>
+
+        <rect width="100%" height="100%" fill="#FAF9F7"/>
+
+        <!-- ============ KONEKTOR (sebelum node, ortogonal) ============ -->
+        <!-- root drop -->
+        <path d="M 480 184 V 224" fill="none" stroke="rgba(17,17,17,0.30)" stroke-width="1"/>
+        <!-- bus horizontal -->
+        <path d="M 144 224 H 816" fill="none" stroke="rgba(17,17,17,0.30)" stroke-width="1"/>
+        <!-- drop ke tiap tab -->
+        <path d="M 144 224 V 288" fill="none" stroke="rgba(17,17,17,0.30)" stroke-width="1"/>
+        <path d="M 368 224 V 288" fill="none" stroke="rgba(17,17,17,0.30)" stroke-width="1"/>
+        <path d="M 592 224 V 288" fill="none" stroke="rgba(17,17,17,0.30)" stroke-width="1"/>
+        <path d="M 816 224 V 288" fill="none" stroke="rgba(17,17,17,0.30)" stroke-width="1"/>
+
+        <!-- ============ ROOT: HOME (focal) ============ -->
+        <rect x="368" y="120" width="224" height="64" rx="6" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+        <text x="480" y="146" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600" text-anchor="middle">Home · 4 Tab</text>
+        <text x="480" y="166" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.04em">NAV BAWAH · SEMUA INPUT MULAI DI SINI</text>
+
+        <!-- ============ TAB 1: TO-DO ============ -->
+        <rect x="40" y="288" width="208" height="160" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="52" y="306" fill="#6B6862" font-size="6.5" font-family="'Geist Mono', monospace" letter-spacing="0.10em">KIRI</text>
+        <text x="52" y="330" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600">To-Do</text>
+        <text x="52" y="352" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">HYBRID · DEFAULT HARI INI</text>
+        <text x="52" y="370" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">SWIPE ANTAR HARI · CHECKBOX</text>
+        <text x="52" y="388" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">FOLLOW-UP CHIP TASK MISS</text>
+        <text x="52" y="406" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">WEEKLY: ACCORDION SEN–MIN</text>
+        <text x="52" y="424" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">+ ADD TASK · CEPAT KE CHAT</text>
+
+        <!-- ============ TAB 2: CHAT ROOM ============ -->
+        <rect x="264" y="288" width="208" height="160" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="276" y="306" fill="#6B6862" font-size="6.5" font-family="'Geist Mono', monospace" letter-spacing="0.10em">TENGAH-KIRI</text>
+        <text x="276" y="330" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600">Chat Room</text>
+        <text x="276" y="352" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">CAPACITY CHECK-IN + CAPTURE</text>
+        <text x="276" y="370" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">BRAIN-DUMP 1 BARIS → TASK</text>
+        <text x="276" y="388" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">KENDALA → CONVERSATION_LOGS</text>
+        <text x="276" y="406" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">NADA: HONEST · GENTLE</text>
+        <text x="276" y="424" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">RIWAYAT SCROLLABLE</text>
+
+        <!-- ============ TAB 3: CALENDAR ============ -->
+        <rect x="488" y="288" width="208" height="160" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="500" y="306" fill="#6B6862" font-size="6.5" font-family="'Geist Mono', monospace" letter-spacing="0.10em">TENGAH-KANAN</text>
+        <text x="500" y="330" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600">Calendar</text>
+        <text x="500" y="352" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">TIME-BLOCK 06:00–22:00</text>
+        <text x="500" y="370" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">CERMIN TO-DO · READ-ONLY</text>
+        <text x="500" y="388" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">TAP TASK → LOMPAT KE TO-DO</text>
+        <text x="500" y="406" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">UNSCHEDULED DI ATAS</text>
+        <text x="500" y="424" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">GOOGLE CAL (TAHAP B, LIHAT)</text>
+
+        <!-- ============ TAB 4: PROFILE ============ -->
+        <rect x="712" y="288" width="208" height="160" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="724" y="306" fill="#6B6862" font-size="6.5" font-family="'Geist Mono', monospace" letter-spacing="0.10em">KANAN</text>
+        <text x="724" y="330" fill="#111111" font-size="12" font-family="'Inter', sans-serif" font-weight="600">Profile</text>
+        <text x="724" y="352" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">INFO AKUN · GOALS AKTIF</text>
+        <text x="724" y="370" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">TEMA · ZONA WAKTU · NOTIF</text>
+        <text x="724" y="388" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">KAPASITAS HARIAN (JAM)</text>
+        <text x="724" y="406" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">RETENSI: BACKUP · SIMPAN · HAPUS</text>
+        <text x="724" y="424" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" letter-spacing="0.04em">LOGOUT</text>
+
+        <!-- ============ CATATAN ARAH DATA ============ -->
+        <line x1="40" y1="496" x2="920" y2="496" stroke="rgba(17,17,17,0.10)" stroke-width="0.8"/>
+        <text x="480" y="520" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.04em">DATA MENGALIR: CHAT → TASK TERSIMPAN → MUNCUL DI TO-DO HARI INI</text>
+        <text x="480" y="540" fill="#6B6862" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.04em">SARAN PINDAH HARI JADI BILA USER TERIMA — KEPUTUSAN SELALU DI TANGAN USER (DCDC)</text>
+
+        <!-- ============ LEGEND ============ -->
+        <rect x="40" y="568" width="28" height="14" rx="3" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+        <text x="76" y="578" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">HOME (PUSAT)</text>
+
+        <rect x="240" y="568" width="28" height="14" rx="3" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="276" y="578" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">TAB</text>
+
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

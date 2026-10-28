@@ -83,8 +83,8 @@ Diambil dari positioning PRD — *"productivity companion yang secara aktif juju
 | :-: | :--- | :-: | :--- | :--- | :--- | :--- |
 | **S1** | **Companion Agent 2-Tone** (HONEST default, GENTLE saat burnout) | 📱 | Nada lugas & data-driven normal; switch ke GENTLE hanya saat sinyal overload (completion_rate 7 hari, consecutive misses, `mood_detected`). | AI tidak toxic positivity, juga tidak menghakimi saat user down. | M4, M12 | 2–3 |
 | **S2** | **Batch Reschedule 1-tap** ("Geser semua sisa hari ini ke besok") | 📱 🌐 | Tombol saat mode GENTLE / overload berat — mempercepat M8 yang per-task. | Mengurangi tap berulang saat user kewalahan. | M8 | 3 |
-| **S3** | **Calendar Tab Time-block** (read-only, 06:00–22:00) | 📱 🌐 | Visualisasi tasks dalam blok waktu vertikal + section Unscheduled di atas. Tap → navigasi ke To-do. | User melihat *kapan* task dijadwalkan, membantu reason kapasitas. | M2 | 1 |
-| **S4** | **Goals** (hubungkan task ke goal, tampil di Profile) | 📱 | Task bisa punya `goal_id`; list ACTIVE goals di Profile. Prioritas M5 diberi bobot lebih jika terkait goal. | Membuat prioritas lebih bermakna. | M3, M5 | 1 |
+| **S3** | **Calendar Tab Time-block** (read-only) **[ON-HOLD]** | 📱 🌐 | **ON-HOLD untuk Mobile v1.** Visualisasi tasks dalam blok waktu vertikal (06:00–22:00) + section Unscheduled. Ditunda dari bottom bar mobile v1 agar fokus eksekusi 3-tab (Home, To Do List, Chat). | User melihat *kapan* task dijadwalkan (disimpan untuk evaluasi pasca-MVP). | M2 | On-Hold |
+| **S4** | **Goals** (hubungkan task ke goal, tampil di Profile) | 📱 | Task bisa punya `goal_id`; list ACTIVE goals di Profile (diakses via tombol avatar di pojok kanan atas). Prioritas M5 diberi bobot lebih jika terkait goal. | Membuat prioritas lebih bermakna. | M3, M5 | 1 |
 | **S5** | **Task Berulang + Weekly Recurrence Generator** | 📱 🌐 | `recurrence_rule` (daily/weekdays/2x-week dll) + cron Minggu malam generate instance baru per `recurrence_group_id`. | Mengurangi input manual habit. | M3 | 3 |
 | **S6** | **Push Notification** (Morning Brief & saran reschedule) | 📱 | Notifikasi pagi untuk M5 + pengingat saran M8 yang masih PENDING. | Menghidupkan kebiasaan pagi tanpa harus buka app. | M5, M8 | 3 |
 | **S7** | **Deteksi Pola Mendalam** pada Insight | 📱 🌐 | Insight tidak hanya rangkuman, tapi pola: jam paling produktif, hari terberat, jenis task yang sering MISSED. `insight_type = PATTERN_DETECTION`. | Memperdalam M10 dari deskriptif menjadi analitis. | M10 | 3 |
@@ -212,7 +212,9 @@ Value Tinggi
 
 6. **Web tanpa Chat adalah keputusan sadar** (`PRD §3.6`), bukan keterbatasan teknis. Jika user butuh brain-dump, buka Mobile.
 
-7. **Desain tetap monokrom hangat.** Semua Must/Should/Could mengikuti `DESIGN.md` — `#FAF9F7` / `#111111` / `#F0EFED`, Inter Black 900 uppercase, no shadows, radius 4–12px.
+7. **Desain tetap monokrom hangat / dark editorial kanonik.** Semua Must/Should/Could mengikuti `DESIGN.md` (dark default, flat surface, no shadows, aksen vermilion tunggal `#FF5420`).
+
+8. **Navigasi Mobile 3 Tab & Calendar On-Hold (2026-10-28):** Navigasi mobile disederhanakan hanya memuat 3 tab utama: **Home**, **To Do List**, dan **Chat**. Fitur Calendar (S3) di-hold sementara untuk rilis mobile v1. Akses menu Profile dipindahkan dari bottom nav ke pojok kanan atas layar (**Top-Right Action**).
 
 ---
 
@@ -232,7 +234,8 @@ Value Tinggi
 | :--- | :--- | :--- |
 | 2026-09-30 | v1 (Antigravity) | Draft awal 6 Must / 6 Should / 6 Could / 7 Won't — fokus Honest Capacity & mapping teknis. (`plans/2026-09-30_moscow-ai-task-manager.md`) |
 | 2026-09-30 | v1 (Claude) | Draft 12 Must / 9 Should / 8 Could / 9 Won't — fokus granularitas rilis & platform mapping. (`from_llm/MOSCOW_FEATURES_CLAUDE.md`) |
-| **2026-09-30** | **v1 Final (Integrasi)** | **Gabungan kedua draft → `MOSCOW_FEATURES.md`**: 13 Must (tambah M12 Capacity Chat, M13 Keamanan), 9 Should, 8 Could, 9 Won't. Struktur, peta masalah, roadmap R1–R4, dan metrik disatukan. |
+| 2026-09-30 | v1 Final (Integrasi) | **Gabungan kedua draft → `MOSCOW_FEATURES.md`**: 13 Must (tambah M12 Capacity Chat, M13 Keamanan), 9 Should, 8 Could, 9 Won't. Struktur, peta masalah, roadmap R1–R4, dan metrik disatukan. |
+| **2026-10-28** | **v2** | **Navigasi Mobile 3 Tab & Calendar On-Hold**: Bottom tab mobile disederhanakan hanya memuat Home, To Do List, Chat. S3 Calendar Tab dialihkan ke On-Hold untuk mobile v1. Profile dipindahkan ke Top-Right Action. |
 
 ---
 

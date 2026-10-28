@@ -31,6 +31,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   late int _currentIndex;
+  TodoViewMode _todoMode = TodoViewMode.dailyFocus;
   String? _initialChatPrompt;
 
   @override
@@ -43,13 +44,37 @@ class _MainScreenState extends State<MainScreen> {
     if (_currentIndex != index) {
       setState(() {
         _currentIndex = index;
+        // Home = daily focus, To-do = weekly overview (PRD §3.2/§3.3)
+        if (index == 0) _todoMode = TodoViewMode.dailyFocus;
+        if (index == 1) _todoMode = TodoViewMode.weeklyOverview;
       });
     }
   }
 
+  void _toggleTodoMode() {
+    setState(() {
+      _todoMode = _todoMode == TodoViewMode.dailyFocus
+          ? TodoViewMode.weeklyOverview
+          : TodoViewMode.dailyFocus;
+    });
+  }
+
+  void _openProfile() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProfileScreen(
+          onToggleTheme: widget.onToggleTheme,
+          isDarkMode: widget.isDarkMode,
+          authService: widget.authService,
+          apiService: widget.apiService,
+        ),
+      ),
+    );
+  }
+
   void _openChatWithPrompt(String? prompt) {
     setState(() {
-      _currentIndex = 1;
+      _currentIndex = 2;
       _initialChatPrompt = prompt;
     });
   }
@@ -75,6 +100,7 @@ class _MainScreenState extends State<MainScreen> {
               apiService: widget.apiService,
               onToggleTheme: widget.onToggleTheme,
               isDarkMode: widget.isDarkMode,
+              viewMode: TodoViewMode.weeklyOverview,
             ),
             // Tab 1: Calendar
             CalendarScreen(
@@ -128,32 +154,26 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
-    // Native Mobile 5-slot pill — Home bulat hitam di tengah (sesuai gambar)
+    // Native Mobile 3-tab (To-do · Home · Chat); Profile = top-right
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex,
+        index: _currentIndex == 2 ? 1 : 0,
         children: [
           WeeklyScreen(
             apiService: widget.apiService,
             onToggleTheme: widget.onToggleTheme,
             isDarkMode: widget.isDarkMode,
             onOpenChat: _openChatWithPrompt,
+            viewMode: _todoMode,
+            onToggleViewMode: _toggleTodoMode,
+            onOpenProfile: _openProfile,
           ),
           ChatRoomScreen(
             isDarkMode: widget.isDarkMode,
             initialPrompt: _initialChatPrompt,
             apiService: widget.apiService,
             onTasksCreated: () => setState(() {}),
-          ),
-          CalendarScreen(
-            isDarkMode: widget.isDarkMode,
-            onNavigateToTodo: () => _onTabTapped(0),
-          ),
-          ProfileScreen(
-            onToggleTheme: widget.onToggleTheme,
-            isDarkMode: widget.isDarkMode,
-            authService: widget.authService,
-            apiService: widget.apiService,
+            onOpenProfile: _openProfile,
           ),
         ],
       ),
@@ -183,6 +203,12 @@ class _MainScreenState extends State<MainScreen> {
                   icon: Icons.check_circle_outline_rounded,
                   activeIcon: Icons.check_circle_rounded,
                   label: 'To-do',
+                  active: _currentIndex == 1,
+                  isDark: isDark,
+                  onTap: () => _onTabTapped(1),
+                ),
+                // HOME — center big circle (the hero)
+                _NavCenterHome(
                   active: _currentIndex == 0,
                   isDark: isDark,
                   onTap: () => _onTabTapped(0),
@@ -190,32 +216,10 @@ class _MainScreenState extends State<MainScreen> {
                 _NavSideItem(
                   icon: Icons.chat_bubble_outline_rounded,
                   activeIcon: Icons.chat_bubble_rounded,
-                  label: 'Chat Room',
-                  active: _currentIndex == 1,
-                  isDark: isDark,
-                  onTap: () => _onTabTapped(1),
-                ),
-                // HOME — center big black circle (the hero, per gambar)
-                _NavCenterHome(
-                  active: _currentIndex == 0, // highlight when on To-do
-                  isDark: isDark,
-                  onTap: () => _onTabTapped(0),
-                ),
-                _NavSideItem(
-                  icon: Icons.calendar_today_outlined,
-                  activeIcon: Icons.calendar_today_rounded,
-                  label: 'Calendar',
+                  label: 'Chat',
                   active: _currentIndex == 2,
                   isDark: isDark,
                   onTap: () => _onTabTapped(2),
-                ),
-                _NavSideItem(
-                  icon: Icons.person_outline_rounded,
-                  activeIcon: Icons.person_rounded,
-                  label: 'Profile',
-                  active: _currentIndex == 3,
-                  isDark: isDark,
-                  onTap: () => _onTabTapped(3),
                 ),
               ],
             ),

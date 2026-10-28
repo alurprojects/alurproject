@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALUR · Delta Perbaikan Must-Fix</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      /* Skin: ALUR DESIGN.md (lihat architecture-current.html) */
+      --color-paper:   #FAF9F7;
+      --color-surface: #F0EFED;
+      --color-ink:     #111111;
+      --color-muted:   #6B6862;
+      --color-accent:  #FF5420;
+      --color-accent-ink: #C63A0F;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1240px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--color-muted); margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-sans);
+      font-size: clamp(1.4rem, 2.2vw + 0.7rem, 1.9rem);
+      font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em;
+      line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 1024px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture Delta · Audit 2026-10-27</p>
+    <h1>ALUR — Rencana Perbaikan Must-Fix</h1>
+
+    <div class="diagram-container">
+      <svg data-diagram="architecture-delta" viewBox="0 0 1024 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="alur-arch-delta-title alur-arch-delta-desc">
+        <title id="alur-arch-delta-title">ALUR fix plan: auth guard, cron secret, timezone</title>
+        <desc id="alur-arch-delta-desc">Perbandingan before-after tiga perbaikan backend: auth fail-closed, CRON_SECRET wajib env, dan tanggal berdasarkan zona waktu user.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6B6862"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#FAF9F7"/>
+
+        <text x="228" y="44" fill="#6B6862" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">SEBELUM · KODE SAAT INI</text>
+        <text x="792" y="44" fill="#6B6862" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">SESUDAH · RENCANA FIX</text>
+
+        <!-- ================= SNAPSHOT: BEFORE ================= -->
+        <g data-snapshot="before" data-grid="392 464 4" transform="translate(32 64)">
+          <!-- relationships -->
+          <path data-kind="relationship" data-object-id="r-req" data-status="unchanged" data-signature="protocol=https;op=request" data-from="clients" data-to="fastapi" d="M 176 76 H 216" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-cron" data-status="unchanged" data-signature="protocol=https;op=trigger;scheduled=true" data-from="cronjob" data-to="fastapi" d="M 176 20 H 228 Q 236 20 236 28 V 48" fill="none" stroke="#6B6862" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-auth" data-status="unchanged" data-signature="op=verify-jwt" data-from="fastapi" data-to="auth-guard" d="M 244 120 V 148 Q 244 156 236 156 H 108 Q 100 156 100 164 V 176" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-authdb" data-status="unchanged" data-signature="op=query-scoped-user" data-from="auth-guard" data-to="supabase" d="M 100 248 V 304" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-cronchk" data-status="unchanged" data-signature="op=verify-cron-secret" data-from="fastapi" data-to="cron-secret" d="M 292 120 V 176" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-clock" data-status="unchanged" data-signature="op=resolve-today" data-from="fastapi" data-to="day-clock" d="M 332 120 V 148 Q 332 156 340 156 H 376 Q 384 156 384 164 V 312 Q 384 320 376 320 H 368" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+          <!-- components -->
+          <g data-kind="component" data-object-id="cronjob" data-status="unchanged" data-signature="actor=external-cron;schedule=nightly-weekly">
+            <rect data-role="bounds" x="24" y="0" width="152" height="40" rx="6" fill="#F0EFED" stroke="rgba(17,17,17,0.18)" stroke-width="1"/>
+            <text x="36" y="25" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">cron-job.org</text>
+          </g>
+
+          <g data-kind="component" data-object-id="clients" data-status="unchanged" data-signature="clients=web+mobile">
+            <rect data-role="bounds" x="24" y="48" width="152" height="56" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+            <text x="36" y="68" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">CLIENTS</text>
+            <text x="36" y="86" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Web + Mobile</text>
+          </g>
+
+          <g data-kind="component" data-object-id="fastapi" data-status="unchanged" data-signature="runtime=vercel-serverless;framework=fastapi">
+            <rect data-role="bounds" x="216" y="48" width="152" height="72" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+            <text x="228" y="68" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">API</text>
+            <text x="228" y="86" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">FastAPI</text>
+            <text x="228" y="104" fill="#6B6862" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">VERCEL SERVERLESS</text>
+          </g>
+
+          <g data-kind="component" data-object-id="auth-guard" data-status="changed" data-signature="guard=dev-fallback;backend_env_default=development">
+            <rect data-role="bounds" x="24" y="176" width="152" height="72" rx="6" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+            <text x="148" y="192" fill="#C63A0F" font-size="10" font-family="'Inter', sans-serif" font-weight="600" text-anchor="end">&#916;</text>
+            <text x="36" y="196" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">AUTH-GUARD</text>
+            <text x="36" y="214" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Auth guard</text>
+            <text x="36" y="232" fill="#C63A0F" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">FALLBACK &#8594; DEV USER ID</text>
+          </g>
+
+          <g data-kind="component" data-object-id="cron-secret" data-status="changed" data-signature="secret=default-hardcoded;compare=eq">
+            <rect data-role="bounds" x="216" y="176" width="152" height="72" rx="6" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+            <text x="340" y="192" fill="#C63A0F" font-size="10" font-family="'Inter', sans-serif" font-weight="600" text-anchor="end">&#916;</text>
+            <text x="228" y="196" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">CRON-SECRET</text>
+            <text x="228" y="214" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Cron secret</text>
+            <text x="228" y="232" fill="#C63A0F" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">DEFAULT DI REPO</text>
+          </g>
+
+          <g data-kind="component" data-object-id="supabase" data-status="unchanged" data-signature="store=postgres;features=rls,pgvector">
+            <rect data-role="bounds" x="24" y="304" width="152" height="72" rx="6" fill="#F0EFED" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+            <text x="36" y="324" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">DB</text>
+            <text x="36" y="342" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Supabase</text>
+            <text x="36" y="360" fill="#6B6862" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">RLS DILEWATI (SVC ROLE)</text>
+          </g>
+
+          <g data-kind="component" data-object-id="day-clock" data-status="changed" data-signature="clock=utc-date-today">
+            <rect data-role="bounds" x="216" y="304" width="152" height="72" rx="6" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+            <text x="340" y="320" fill="#C63A0F" font-size="10" font-family="'Inter', sans-serif" font-weight="600" text-anchor="end">&#916;</text>
+            <text x="228" y="324" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">DAY-CLOCK</text>
+            <text x="228" y="342" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Day clock</text>
+            <text x="228" y="360" fill="#C63A0F" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">date.today() = UTC</text>
+          </g>
+        </g>
+
+        <!-- ================= SNAPSHOT: AFTER ================= -->
+        <g data-snapshot="after" data-grid="392 464 4" transform="translate(596 64)">
+          <path data-kind="relationship" data-object-id="r-req" data-status="unchanged" data-signature="protocol=https;op=request" data-from="clients" data-to="fastapi" d="M 176 76 H 216" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-cron" data-status="unchanged" data-signature="protocol=https;op=trigger;scheduled=true" data-from="cronjob" data-to="fastapi" d="M 176 20 H 228 Q 236 20 236 28 V 48" fill="none" stroke="#6B6862" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-auth" data-status="unchanged" data-signature="op=verify-jwt" data-from="fastapi" data-to="auth-guard" d="M 244 120 V 148 Q 244 156 236 156 H 108 Q 100 156 100 164 V 176" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-authdb" data-status="unchanged" data-signature="op=query-scoped-user" data-from="auth-guard" data-to="supabase" d="M 100 248 V 304" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-cronchk" data-status="unchanged" data-signature="op=verify-cron-secret" data-from="fastapi" data-to="cron-secret" d="M 292 120 V 176" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <path data-kind="relationship" data-object-id="r-clock" data-status="unchanged" data-signature="op=resolve-today" data-from="fastapi" data-to="day-clock" d="M 332 120 V 148 Q 332 156 340 156 H 376 Q 384 156 384 164 V 312 Q 384 320 376 320 H 368" fill="none" stroke="#6B6862" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+          <g data-kind="component" data-object-id="cronjob" data-status="unchanged" data-signature="actor=external-cron;schedule=nightly-weekly">
+            <rect data-role="bounds" x="24" y="0" width="152" height="40" rx="6" fill="#F0EFED" stroke="rgba(17,17,17,0.18)" stroke-width="1"/>
+            <text x="36" y="25" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">cron-job.org</text>
+          </g>
+
+          <g data-kind="component" data-object-id="clients" data-status="unchanged" data-signature="clients=web+mobile">
+            <rect data-role="bounds" x="24" y="48" width="152" height="56" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+            <text x="36" y="68" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">CLIENTS</text>
+            <text x="36" y="86" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Web + Mobile</text>
+          </g>
+
+          <g data-kind="component" data-object-id="fastapi" data-status="unchanged" data-signature="runtime=vercel-serverless;framework=fastapi">
+            <rect data-role="bounds" x="216" y="48" width="152" height="72" rx="6" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+            <text x="228" y="68" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">API</text>
+            <text x="228" y="86" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">FastAPI</text>
+            <text x="228" y="104" fill="#6B6862" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">VERCEL SERVERLESS</text>
+          </g>
+
+          <g data-kind="component" data-object-id="auth-guard" data-status="changed" data-signature="guard=fail-closed-401;backend_env_default=production">
+            <rect data-role="bounds" x="24" y="176" width="152" height="72" rx="6" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+            <text x="148" y="192" fill="#C63A0F" font-size="10" font-family="'Inter', sans-serif" font-weight="600" text-anchor="end">&#916;</text>
+            <text x="36" y="196" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">AUTH-GUARD</text>
+            <text x="36" y="214" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Auth guard</text>
+            <text x="36" y="232" fill="#C63A0F" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">TANPA JWT &#8594; 401</text>
+          </g>
+
+          <g data-kind="component" data-object-id="cron-secret" data-status="changed" data-signature="secret=required-env;compare=timing-safe">
+            <rect data-role="bounds" x="216" y="176" width="152" height="72" rx="6" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+            <text x="340" y="192" fill="#C63A0F" font-size="10" font-family="'Inter', sans-serif" font-weight="600" text-anchor="end">&#916;</text>
+            <text x="228" y="196" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">CRON-SECRET</text>
+            <text x="228" y="214" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Cron secret</text>
+            <text x="228" y="232" fill="#C63A0F" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">WAJIB ENV + TIMING-SAFE</text>
+          </g>
+
+          <g data-kind="component" data-object-id="supabase" data-status="unchanged" data-signature="store=postgres;features=rls,pgvector">
+            <rect data-role="bounds" x="24" y="304" width="152" height="72" rx="6" fill="#F0EFED" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+            <text x="36" y="324" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">DB</text>
+            <text x="36" y="342" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Supabase</text>
+            <text x="36" y="360" fill="#6B6862" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">RLS DILEWATI (SVC ROLE)</text>
+          </g>
+
+          <g data-kind="component" data-object-id="day-clock" data-status="changed" data-signature="clock=user-timezone-zoneinfo">
+            <rect data-role="bounds" x="216" y="304" width="152" height="72" rx="6" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+            <text x="340" y="320" fill="#C63A0F" font-size="10" font-family="'Inter', sans-serif" font-weight="600" text-anchor="end">&#916;</text>
+            <text x="228" y="324" fill="#6B6862" font-size="6" font-family="'Geist Mono', monospace" letter-spacing="0.08em">DAY-CLOCK</text>
+            <text x="228" y="342" fill="#111111" font-size="10.5" font-family="'Inter', sans-serif" font-weight="600">Day clock</text>
+            <text x="228" y="360" fill="#C63A0F" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.02em">ZONEINFO(USER.TIMEZONE)</text>
+          </g>
+        </g>
+
+        <!-- ================= LEDGER (di luar kedua snapshot) ================= -->
+        <text data-change="CHANGED" data-target="auth-guard" x="436" y="132" fill="#111111" font-size="8.5" font-family="'Inter', sans-serif" font-weight="600">
+          <tspan>CHANGED auth-guard</tspan>
+          <tspan x="436" dy="14" fill="#6B6862" font-weight="400" font-size="8">Fallback ke DEV USER dihapus:</tspan>
+          <tspan x="436" dy="12" fill="#6B6862" font-weight="400" font-size="8">tanpa JWT &#8594; 401. Default</tspan>
+          <tspan x="436" dy="12" fill="#6B6862" font-weight="400" font-size="8">BACKEND_ENV &#8594; production.</tspan>
+        </text>
+        <line x1="436" y1="216" x2="588" y2="216" stroke="rgba(17,17,17,0.12)" stroke-width="0.8"/>
+
+        <text data-change="CHANGED" data-target="cron-secret" x="436" y="252" fill="#111111" font-size="8.5" font-family="'Inter', sans-serif" font-weight="600">
+          <tspan>CHANGED cron-secret</tspan>
+          <tspan x="436" dy="14" fill="#6B6862" font-weight="400" font-size="8">Default hardcoded dihapus;</tspan>
+          <tspan x="436" dy="12" fill="#6B6862" font-weight="400" font-size="8">CRON_SECRET wajib dari env,</tspan>
+          <tspan x="436" dy="12" fill="#6B6862" font-weight="400" font-size="8">dibandingkan timing-safe.</tspan>
+        </text>
+        <line x1="436" y1="336" x2="588" y2="336" stroke="rgba(17,17,17,0.12)" stroke-width="0.8"/>
+
+        <text data-change="CHANGED" data-target="day-clock" x="436" y="372" fill="#111111" font-size="8.5" font-family="'Inter', sans-serif" font-weight="600">
+          <tspan>CHANGED day-clock</tspan>
+          <tspan x="436" dy="14" fill="#6B6862" font-weight="400" font-size="8">date.today() (UTC) diganti</tspan>
+          <tspan x="436" dy="12" fill="#6B6862" font-weight="400" font-size="8">tanggal zona waktu user</tspan>
+          <tspan x="436" dy="12" fill="#6B6862" font-weight="400" font-size="8">(Asia/Jakarta sebagai default).</tspan>
+        </text>
+
+        <!-- ================= LEGEND ================= -->
+        <rect x="200" y="552" width="28" height="14" rx="3" fill="rgba(255,84,32,0.07)" stroke="#FF5420" stroke-width="1.2"/>
+        <text x="236" y="562" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">CHANGED (&#916;)</text>
+
+        <rect x="380" y="552" width="28" height="14" rx="3" fill="#FFFFFF" stroke="rgba(17,17,17,0.28)" stroke-width="1"/>
+        <text x="416" y="562" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">UNCHANGED</text>
+
+        <line x1="560" y1="559" x2="592" y2="559" stroke="#6B6862" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="600" y="562" fill="#6B6862" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">SCHEDULED TRIGGER</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

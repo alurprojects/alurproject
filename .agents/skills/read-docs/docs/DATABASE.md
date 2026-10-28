@@ -12,7 +12,7 @@
 | Tabel | Fase | Deskripsi |
 | :--- | :---: | :--- |
 | `users` | 1 | Profil, timezone, kapasitas harian, dan core profile summary user |
-| `goals` | 1 | Target / tujuan jangka menengah-panjang user (ditampilkan di tab Profile) |
+| `goals` | 1 | Target / tujuan jangka menengah-panjang user (ditampilkan di layar Profile) |
 | `tasks` | 1 | Unit kerja utama; bisa manual, brain-dump, atau dari Chat Room |
 | `conversation_logs` | 2 | Seluruh interaksi Chat Room (user & AI), bahan evaluasi Reflection Agent |
 | `task_suggestions` | 3 | Saran reschedule dari Scheduler Agent |

@@ -90,9 +90,9 @@ Untuk menjaga pengalaman pengguna tetap tenang (*calm, tactile, and unobtrusive*
 - **State Feedback**: Selama komunikasi dengan Google OAuth dan Supabase berlangsung, tombol `GoogleSignInButton` menampilkan *loading indicator* dan berstatus nonaktif guna mencegah *multiple taps*.
 
 ### B. Transisi Keluar (Logout Transition: MainScreen → AuthScreen)
-- **Mekanisme**: Dipicu ketika pengguna menekan tombol "Log Out" (di Tab Profile) yang memanggil `authService.signOut()`.
+- **Mekanisme**: Dipicu ketika pengguna menekan tombol "Log Out" (di Layar Profile via Top-Right Action) yang memanggil `authService.signOut()`.
 - **Efek Visual**: *Pure Clean Fade* (Opacity 1.0 → 0.0 → 1.0) menuju `AuthScreen`.
 - **Durasi**: **250ms**.
 - **Kurva (*Easing*)**: `Curves.easeOutCubic`.
-- **Pembersihan State**: Seluruh status aktif di `MainScreen` direset kembali ke Tab 0 (To-do), session token dibersihkan, dan layar kembali ke landing `AuthScreen` tanpa *screen flicker* atau *blank page*.
+- **Pembersihan State**: Seluruh status aktif di `MainScreen` direset kembali ke Tab 0 (Home), session token dibersihkan, dan layar kembali ke landing `AuthScreen` tanpa *screen flicker* atau *blank page*.
 

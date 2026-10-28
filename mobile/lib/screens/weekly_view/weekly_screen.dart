@@ -20,6 +20,9 @@ class WeeklyScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
   final bool isDarkMode;
   final Function(String? prompt)? onOpenChat;
+  final TodoViewMode viewMode;
+  final VoidCallback? onToggleViewMode;
+  final VoidCallback? onOpenProfile;
 
   const WeeklyScreen({
     super.key,
@@ -27,6 +30,9 @@ class WeeklyScreen extends StatefulWidget {
     required this.onToggleTheme,
     required this.isDarkMode,
     this.onOpenChat,
+    this.viewMode = TodoViewMode.dailyFocus,
+    this.onToggleViewMode,
+    this.onOpenProfile,
   });
 
   @override
@@ -43,8 +49,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
   String? _errorMessage;
   int _expandedDayIndex = -1;
   int _selectedDayIndex = 0;
-  TodoViewMode _viewMode = TodoViewMode.dailyFocus;
-  late PageController _pageController;
+    late PageController _pageController;
 
   @override
   void initState() {
@@ -176,7 +181,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
   Future<void> _toggleTaskStatus(Task task, bool isDone, [int? dayIndexOverride]) async {
     if (_weekData == null) return;
     final dayIndex = dayIndexOverride ??
-        (_viewMode == TodoViewMode.dailyFocus ? _selectedDayIndex : _expandedDayIndex);
+        (widget.viewMode == TodoViewMode.dailyFocus ? _selectedDayIndex : _expandedDayIndex);
     if (dayIndex < 0 || dayIndex >= _weekData!.days.length) return;
 
     // Optimistic UI update
@@ -206,7 +211,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
 
   Future<void> _handleAddTask(String dayDate, String title, [int? dayIndexOverride]) async {
     final dayIndex = dayIndexOverride ??
-        (_viewMode == TodoViewMode.dailyFocus ? _selectedDayIndex : _expandedDayIndex);
+        (widget.viewMode == TodoViewMode.dailyFocus ? _selectedDayIndex : _expandedDayIndex);
     if (_weekData == null || dayIndex < 0 || dayIndex >= _weekData!.days.length) return;
 
     try {
@@ -233,7 +238,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
   Future<void> _handleClarifyTask(Task task, int minutes, [int? dayIndexOverride]) async {
     if (_weekData == null) return;
     final dayIndex = dayIndexOverride ??
-        (_viewMode == TodoViewMode.dailyFocus ? _selectedDayIndex : _expandedDayIndex);
+        (widget.viewMode == TodoViewMode.dailyFocus ? _selectedDayIndex : _expandedDayIndex);
     if (dayIndex < 0 || dayIndex >= _weekData!.days.length) return;
 
     // Optimistic UI update
@@ -563,25 +568,20 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
         ),
         actions: [
           // View Mode Toggle (Daily Focus <-> Weekly Overview)
-          IconButton(
-            tooltip: _viewMode == TodoViewMode.dailyFocus
-                ? 'Beralih ke Weekly Overview'
-                : 'Beralih ke Daily Focus',
-            icon: Icon(
-              _viewMode == TodoViewMode.dailyFocus
-                  ? Icons.calendar_view_week_rounded
-                  : Icons.calendar_view_day_rounded,
-              size: 20,
-              color: primaryTextColor,
+          if (widget.onToggleViewMode != null)
+            IconButton(
+              tooltip: widget.viewMode == TodoViewMode.dailyFocus
+                  ? 'Beralih ke Weekly Overview'
+                  : 'Beralih ke Daily Focus',
+              icon: Icon(
+                widget.viewMode == TodoViewMode.dailyFocus
+                    ? Icons.calendar_view_week_rounded
+                    : Icons.calendar_view_day_rounded,
+                size: 20,
+                color: primaryTextColor,
+              ),
+              onPressed: widget.onToggleViewMode,
             ),
-            onPressed: () {
-              setState(() {
-                _viewMode = _viewMode == TodoViewMode.dailyFocus
-                    ? TodoViewMode.weeklyOverview
-                    : TodoViewMode.dailyFocus;
-              });
-            },
-          ),
           // Today jump button
           TextButton(
             onPressed: _goToToday,
@@ -604,6 +604,26 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
             ),
             onPressed: widget.onToggleTheme,
           ),
+          if (widget.onOpenProfile != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: widget.onOpenProfile,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkSurface : AppColors.paperGray,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: isDark ? AppColors.darkBorder : AppColors.hairlineGray),
+                  ),
+                  child: Icon(Icons.person_outline_rounded,
+                      size: 17, color: primaryTextColor),
+                ),
+              ),
+            ),
           const SizedBox(width: 8),
         ],
       ),
@@ -712,7 +732,7 @@ class _WeeklyScreenState extends State<WeeklyScreen> {
                     ),
 
                     // Mode: Daily Focus View vs Weekly Overview Accordion
-                    if (_viewMode == TodoViewMode.dailyFocus) ...[
+                    if (widget.viewMode == TodoViewMode.dailyFocus) ...[
                       // ——— Daily header ala gambar (Fri •  |  Dec 9  / 2024)
                       Builder(builder: (context) {
                         final idx = _selectedDayIndex.clamp(0, (_weekData?.days.length ?? 1) - 1);

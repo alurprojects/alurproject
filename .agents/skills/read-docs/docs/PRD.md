@@ -15,26 +15,37 @@
 
 ## 3. UI/UX Spec
 
-### 3.1 Navigasi (4 Tab)
-| Posisi | Tab | Fungsi |
-| :--- | :--- | :--- |
-| Kiri | To-do | Hybrid Daily/Weekly view |
-| Tengah-kiri | Chat Room | Brain-dump + Curhat + AI companion |
-| Tengah-kanan | Calendar | Time-block view (representasi data To-do dalam bentuk waktu) |
-| Kanan | Profile | Settings, Goals, info akun |
+### 3.1 Navigasi Mobile (3 Tab Menu + Top-Right Profile)
+Navigasi utama mobile apps disederhanakan menjadi **3 tab menu bawah** saja, sementara akses Profile dipindahkan ke **pojok kanan atas (Top-Right Action)**:
 
-### 3.2 To-do Tab (Hybrid View)
+| Posisi | Navigasi | Fungsi Utama |
+| :--- | :--- | :--- |
+| Bottom Nav: Kiri | **Home** | Dashboard ringkasan harian, Morning Priority Brief (Top 3), status kapasitas harian & quick action |
+| Bottom Nav: Tengah | **To Do List** | Hybrid Daily Focus & Weekly Overview, manajemen & eksekusi tugas, checklist, follow-up chips |
+| Bottom Nav: Kanan | **Chat** | Brain-dump quick capture + Curhat kendala + AI companion & capacity check-in |
+| Header Kanan Atas | **Profile** | Ikon/Avatar profil untuk akses Goals, Settings (kapasitas, timezone, notifikasi), Retensi Chat, & Logout |
+
+> **Catatan Navigasi:**
+> - **Calendar di-hold dulu:** Tab Calendar (time-block) ditunda sementara dari bottom bar mobile apps v1 agar antarmuka fokus pada eksekusi dan kejujuran kapasitas.
+> - **Profile geser ke kanan atas:** Mengurangi kepadatan bottom navigation bar dan memisahkan fungsi operasional harian (Home, To Do List, Chat) dengan pengaturan akun.
+
+### 3.2 Home Tab (Daily Overview & Morning Brief)
+- Puncak layar: **Morning Priority Brief banner** (Maks. Top 3 prioritas hari ini + 1 kalimat alasan)
+- **Status Kapasitas Harian:** Indikator total estimasi waktu vs `daily_capacity_hours`, visualisasi overload warning jika melebihi kapasitas
+- **Quick Action:** Tombol cepat untuk tambah tugas baru atau mulai brain-dump ke Chat
+
+### 3.3 To Do List Tab (Hybrid View)
 - **Default: Daily Focus** — hanya tampilkan HARI INI
   - Swipe kiri/kanan untuk hari lain
   - Task di-render sebagai list dengan checkbox
   - Follow-up chip untuk task miss (goal-linked/recurring only)
   - "+ Add task" inline input
-  - Tombol akses cepat ke Chat Room untuk brain-dump
+  - Tombol akses cepat ke Chat untuk brain-dump
 - **Toggle: Weekly Overview** — accordion Mon-Sun seperti design existing
   - Expand/collapse per hari
   - Overview semua task minggu ini
 
-### 3.3 Chat Room Tab
+### 3.4 Chat Tab (Brain-dump & AI Companion)
 - Tampilan chat sederhana — minimalis sesuai design language ALUR
 - Fungsi utama: **Capacity check-in & task capture**, bukan ruang obrolan bebas
 - User bisa:
@@ -47,15 +58,13 @@
 - History chat tersimpan dan scrollable
 - AI personality: 2-tone system (HONEST default, GENTLE saat mendeteksi sinyal overload/burnout)
 
-### 3.4 Calendar Tab
-- Time-block view vertikal (06:00-22:00)
-- Representasi data To-do dalam format waktu
-- READ-ONLY untuk status (tidak ada checkbox di sini)
-- Tap task → navigasi ke To-do tab
-- Unscheduled section di atas untuk task tanpa waktu
-- Google Calendar integration (Tahap B, read-only)
+### 3.5 Calendar (ON-HOLD untuk Mobile v1)
+- *Status: Ditunda / On-Hold pada Mobile Apps v1.*
+- Konsep: Time-block view vertikal (06:00-22:00) yang merepresentasikan data to-do dalam format waktu (read-only status).
+- Dialihkan ke status On-Hold pada tab bar mobile v1 agar user fokus pada Home dan To Do List. Integrasi Google Calendar (Tahap B, read-only) tetap dipertahankan dalam roadmap mendatang.
 
-### 3.5 Profile Tab
+### 3.6 Profile (Top-Right Action)
+- Diakses via ikon/avatar di pojok kanan atas layar (Top Bar), bukan bottom tab menu.
 - Info akun user
 - Goals section (list ACTIVE goals, tap expand ke sub-tasks)
 - Settings: theme, timezone, notifications, daily_capacity_hours
@@ -67,7 +76,7 @@
 - Tombol "Hapus Riwayat Chat" — hapus seluruh `conversation_logs` milik user via `DELETE /chat/history`, dengan konfirmasi 2-langkah (karena destruktif dan tidak bisa di-undo)
 - Logout
 
-### 3.6 Web App — Scope Terbatas
+### 3.7 Web App — Scope Terbatas
 Web app v1 HANYA berisi:
 - To-do (Hybrid Daily/Weekly, sama seperti mobile Section 3.2)
 - Calendar (read-only, sama seperti mobile Section 3.4)
@@ -132,7 +141,7 @@ Stack: LangGraph (orchestration) + LangChain (agent runtime) + Gemini/Groq (LLM)
 User ketik di Chat Room → Companion Agent + Extractor Agent → AI parsing → task/refleksi/curhat dipilah → jika task: insert ke DB, konfirmasi ke user → UI refresh
 
 ### Eksekusi Harian
-User buka app → To-do tab → Daily Focus (hari ini) → centang task → status = DONE
+User buka app → Home (cek Morning Brief & Kapasitas) / To Do List tab → Daily Focus (hari ini) → centang task → status = DONE
 
 ### Curhat/Refleksi
 User ketik di Chat Room tentang kendala → AI merespons dengan empati → conversation disimpan → data ini jadi input Reflection Agent untuk insight mingguan
@@ -147,13 +156,13 @@ User tanya "Masih bisa ngerjain apa hari ini?" → Companion Agent cek remaining
 
 | Fase | Fokus | Yang Dibangun |
 | :--- | :--- | :--- |
-| 1 — UI Core | Validasi desain | Hybrid Daily/Weekly to-do, 4-tab nav, auth, dark/light. Tanpa AI. Chat Room sebagai UI shell (belum ada AI backend). |
+| 1 — UI Core | Validasi desain | Hybrid Daily/Weekly to-do di To Do List tab, Home tab (Morning Brief slot & kapasitas), Chat tab UI shell, Top-Right Profile, 3-tab bottom nav, auth Google OAuth, dark/light. Calendar di-hold. Tanpa AI. |
 | 2 — Chat Room + LangGraph | AI masuk | Extractor Agent, Companion Agent, Scheduler Agent, conversation_logs, diorkestrasi via LangGraph. Chat Room jadi functional. |
 | 3 — Otonomi Penuh | Multi-agent + cron | Reflection Agent dengan combined data, seluruh cron, saran reschedule, voice-to-text, adaptive personality tuning. |
 
 ## 8. Non-Goals
 
-Harada/8-Pilar, gamifikasi (streak/leaderboard/level), auto-reschedule tanpa persetujuan user, learning_style/personalisasi cara-belajar. Calendar tab BUKAN pengganti to-do (read-only representasi data yang sama). Web app scope awal dibatasi ke To-do + Calendar (read-only); Chat Room & Profile di web ditunda sampai versi mobile stabil.
+Harada/8-Pilar, gamifikasi (streak/leaderboard/level), auto-reschedule tanpa persetujuan user, learning_style/personalisasi cara-belajar. Calendar tab BUKAN pengganti to-do dan di-hold sementara untuk rilis mobile apps v1. Web app scope awal dibatasi ke To-do + Calendar (read-only); Chat Room & Profile di web ditunda sampai versi mobile stabil.
 
 ## 9. Key Differentiators
 
